@@ -1,5 +1,6 @@
 ﻿using carkaashiv_angular_API.Data;
 using carkaashiv_angular_API.Models;
+using carkaashiv_angular_API.Models.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore; 
 
@@ -26,7 +27,7 @@ namespace carkaashiv_angular_API.Controllers
         public async Task<ActionResult<IEnumerable<TablePart>>> GetParts()
         {
             var parts = await _context.tbl_part.ToListAsync();
-            return Ok(ApiResponse<IEnumerable<TablePart>>.Ok("Parts fetched successfully",parts));
+            return Ok(Models.Auth.ApiResponse<IEnumerable<TablePart>>.Ok("Parts fetched successfully",parts));
          }
 
         // GET api/<PartsController>/5 by id
@@ -36,7 +37,7 @@ namespace carkaashiv_angular_API.Controllers
             var part = await _context.tbl_part.FindAsync(id);
             if (part == null)
             {
-                return NotFound(ApiResponse<object>.Fail("Part not found"));
+                return NotFound(Models.Auth.ApiResponse<object>.Fail("Part not found"));
             }
             return Ok(("Part fetched successfully", part));
         }
@@ -74,17 +75,17 @@ namespace carkaashiv_angular_API.Controllers
             if(part == null)
             {
                // return NotFound();
-               return NotFound(ApiResponse<object>.Fail("Part not found"));
+               return NotFound(Models.Auth.ApiResponse<object>.Fail("Part not found"));
             }
             try
             {
                 _context.tbl_part.Remove(part);
                 await _context.SaveChangesAsync();
-                return Ok(ApiResponse<object>.Ok("Part deleted successfully"));
+                return Ok(Models.Auth.ApiResponse<object>.Ok("Part deleted successfully"));
             }
-            catch (DbUpdateException ex)
+            catch (DbUpdateException )
             {
-                return BadRequest(ApiResponse<object>.Fail("Cannot delete part beacuse it is linked with orders"));
+                return BadRequest(Models.Auth.ApiResponse<object>.Fail("Cannot delete part beacuse it is linked with orders"));
             }
           
         }
