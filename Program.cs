@@ -44,6 +44,7 @@ builder.Services.AddAuthentication(options =>
 // Database connection
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 //Enable CORS(for angular app)
 builder.Services.AddCors(options =>
 {
@@ -52,7 +53,8 @@ builder.Services.AddCors(options =>
         {
             builder.WithOrigins("http://localhost:4200") // Angular app URL
                    .AllowAnyHeader()
-                   .AllowAnyMethod();
+                   .AllowAnyMethod()
+                   .AllowCredentials(); // crucial for cookies
         });
 });
 

@@ -23,19 +23,30 @@ namespace carkaashiv_angular_API.Controllers
         {
             if (request.Username == "admin" && request.Password == "admin123")
             {
-                var token = GenerateJwtToken(request.Username, "Admin");
-                return Ok(new Models.Auth.ApiResponse<LoginResponse>(
+                // Create secure HttpOnly cookie
+                var token = GenerateJwtToken(request.Username, "Admin");                             
+              
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite =SameSiteMode.Strict,
+                    Expires = DateTime.UtcNow.AddHours(1)
+                };
+                // Attach token to cookie
+                Response.Cookies.Append("jwtToken", token, cookieOptions);
+
+                return Ok(new ApiResponse<LoginResponse>(
                     true,
                     "Login Successful",
                     new LoginResponse
                     {
-                        Token = token,
                         Username = request.Username,
                         Role = "Admin"
                     }
                     ));          
             }
-            return Unauthorized(new Models.Auth.ApiResponse<string>
+            return Unauthorized(new ApiResponse<string>
             (
                false,
                "Invalid Username or password"
