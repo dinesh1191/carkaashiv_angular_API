@@ -1,5 +1,6 @@
 ﻿using carkaashiv_angular_API.Models;
 using carkaashiv_angular_API.Models.Auth;
+using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
@@ -24,13 +25,13 @@ namespace carkaashiv_angular_API.Controllers
             if (request.Username == "admin" && request.Password == "admin123")
             {
                 // Create secure HttpOnly cookie
-                var token = GenerateJwtToken(request.Username, "Admin");                             
-              
+                var token = GenerateJwtToken(request.Username, "Admin");
+
                 var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = true,
-                    SameSite =SameSiteMode.Strict,
+                    Secure = true, //use true only in production (HTTPS)required for SameSite=None
+                    SameSite = SameSiteMode.None, //crucial for cross - origin(Angular <-> .NET)
                     Expires = DateTime.UtcNow.AddHours(1)
                 };
                 // Attach token to cookie
@@ -44,7 +45,7 @@ namespace carkaashiv_angular_API.Controllers
                         Username = request.Username,
                         Role = "Admin"
                     }
-                    ));          
+                    ));
             }
             return Unauthorized(new ApiResponse<string>
             (
@@ -52,18 +53,18 @@ namespace carkaashiv_angular_API.Controllers
                "Invalid Username or password"
             ));
         }
-    
 
-    // Helper method to generate JWT token
 
-    private string GenerateJwtToken(string username, string role)
+        // Helper method to generate JWT token
+
+        private string GenerateJwtToken(string username, string role)
         {
             var jwtSettings = _config.GetSection("Jwt");
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
-            {              
+            {
                 new Claim(ClaimTypes.Name,username),
                 new Claim(ClaimTypes.Role,role)
             };
@@ -72,14 +73,39 @@ namespace carkaashiv_angular_API.Controllers
                 audience: jwtSettings["Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(jwtSettings["ExpiresInMinutes"])),
-                signingCredentials: creds);              
-                return new JwtSecurityTokenHandler().WriteToken(token);
+                signingCredentials: creds);
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            //*** Clear the cookie by setting an expired cookie
+            Response.Cookies.Append("jwtToken","",new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddDays(-1) // expired cookie
+            });
+
+            return Ok(new ApiResponse<string>
+                (
+                true,
+                "Login Successful,jwt Cleared"
+                ));
         }
 
 
 
 
- 
-    } 
 
-}
+    }
+
+
+ 
+    
+    
+    
+    }

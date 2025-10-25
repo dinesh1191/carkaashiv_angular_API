@@ -1,6 +1,7 @@
 using carkaashiv_angular_API.Data;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -24,8 +25,8 @@ if (string.IsNullOrEmpty(jwtKey))
 
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    //options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    //options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
 {
@@ -38,6 +39,29 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+    };
+    // to extract token from cookie
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        
+        {
+            var logger = context.HttpContext.RequestServices
+               .GetRequiredService<ILoggerFactory>()
+               .CreateLogger("JWT");
+
+            if (context.Request.Cookies.ContainsKey("jwtToken"))
+            {
+                context.Token = context.Request.Cookies["jwtToken"];
+                logger.LogInformation("JWT cookie found. Token: {token}", context.Token?.Substring(0, 20) + "...");
+            }
+            else
+            {
+                logger.LogWarning("JWT cookie not found in request.");
+            }
+            return Task.CompletedTask;
+        }
+
     };
 });
 
@@ -54,18 +78,16 @@ builder.Services.AddCors(options =>
             builder.WithOrigins("http://localhost:4200") // Angular app URL
                    .AllowAnyHeader()
                    .AllowAnyMethod()
-                   .AllowCredentials(); // crucial for cookies
+                   .AllowCredentials(); // important for cookies
         });
 });
-
-var app = builder.Build();
-// Use authentication & authorization middleware
-app.UseAuthentication();
-
 // Configure the HTTP request pipeline.
+var app = builder.Build();
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAngularApp");
+// Use authentication & authorization middleware
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

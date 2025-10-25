@@ -1,6 +1,7 @@
 ﻿using carkaashiv_angular_API.Data;
 using carkaashiv_angular_API.Models;
 using carkaashiv_angular_API.Models.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore; 
 
@@ -12,6 +13,8 @@ namespace carkaashiv_angular_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+
     public class PartsController : ControllerBase
     {
 
@@ -24,6 +27,7 @@ namespace carkaashiv_angular_API.Controllers
 
         // GET: api/<PartsController>
         [HttpGet]
+
         public async Task<ActionResult<IEnumerable<TablePart>>> GetParts()
         {
             var parts = await _context.tbl_part.ToListAsync();
