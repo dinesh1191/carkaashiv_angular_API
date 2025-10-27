@@ -10,7 +10,7 @@ namespace carkaashiv_angular_API.Models
         [Column("part_id")] // Db backend column name, Primary key Auto-Increment
         public int PartId { get; set; } //frontend  form field name, 
 
-        [MinLength(3, ErrorMessage = "Employee Id Required")]
+       // [MinLength(3, ErrorMessage = "Employee Id Required")]
         [Required]
         [Column("emp_id")]
         public int? PEmpId { get; set; }
@@ -29,7 +29,7 @@ namespace carkaashiv_angular_API.Models
         public decimal? PPrice { get; set; }
 
 
-        [Required, StringLength(50)]
+        [Required]
         [Column("part_stock")]
         public int? PStock { get; set; }
 

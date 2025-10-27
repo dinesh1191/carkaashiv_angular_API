@@ -26,7 +26,7 @@ namespace carkaashiv_angular_API.Controllers
         }
 
         // GET: api/<PartsController>
-        [HttpGet]
+        [HttpGet("getParts")]
 
         public async Task<ActionResult<IEnumerable<TablePart>>> GetParts()
         {
@@ -38,17 +38,25 @@ namespace carkaashiv_angular_API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<TablePart>> GetPart(int id)
         {
-            var part = await _context.tbl_part.FindAsync(id);
-            if (part == null)
+            try
             {
-                return NotFound(Models.Auth.ApiResponse<object>.Fail("Part not found"));
+                var part = await _context.tbl_part.FindAsync(id);
+                if (part == null)
+                {
+                    return NotFound(ApiResponse<TablePart>.Fail("Part not found"));
+                }
+                return Ok(ApiResponse<TablePart>.Ok("Part fetched successfully", part));
+
             }
-            return Ok(("Part fetched successfully", part));
+            catch (Exception ex)            {
+               
+                return StatusCode(500, new { message = ex.Message, stack = ex.StackTrace });
+            }
         }
 
         // POST api/<PartsController> for new part creation on db
-        [HttpPost]
-        public async Task<ActionResult<TablePart>> PostPart(TablePart part) 
+        [HttpPost("addPart")]
+        public async Task<ActionResult<TablePart>> addPart(TablePart part) 
         {
 
             _context.tbl_part.Add(part);

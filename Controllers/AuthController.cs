@@ -22,7 +22,7 @@ namespace carkaashiv_angular_API.Controllers
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequest request)
         {
-            if (request.Username == "admin" && request.Password == "admin123")
+            if (request.Username == "dini@kaashiv.com" && request.Password == "$2a$11$5Gg3g.AQ7.j08J.sM6O3QOckGT1wBv9Z9nyCz86.HoVoWNjxaAskO")
             {
                 // Create secure HttpOnly cookie
                 var token = GenerateJwtToken(request.Username, "Admin");
