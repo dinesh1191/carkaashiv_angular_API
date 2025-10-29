@@ -10,6 +10,7 @@ namespace carkaashiv_angular_API.Data
             {
             }
             public DbSet<TablePart> tbl_part { get; set; }
+             public DbSet<TableEmployee> tbl_emp { get; set; }
         }
 
     
