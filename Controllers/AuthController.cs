@@ -105,15 +105,13 @@ namespace carkaashiv_angular_API.Controllers
         [HttpPost("logout")]
         public IActionResult Logout()
         {
-            //*** Clear the cookie by setting an expired cookie
-            Response.Cookies.Append("jwtToken", "", new CookieOptions
+            //** Delete cookie by name
+            Response.Cookies.Delete("jwtToken", new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
-                SameSite = SameSiteMode.None,
-                Expires = DateTime.UtcNow.AddDays(-1) // expired cookie
+                SameSite = SameSiteMode.None,              
             });
-
             return Ok(new ApiResponse<string>
                 (
                 true,
