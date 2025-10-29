@@ -111,15 +111,12 @@ namespace carkaashiv_angular_API.Controllers
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.None,              
-            });
-            return Ok(new ApiResponse<string>
-                (
-                true,
-                "Login Successful,jwt Cleared"
-                ));
-        }
+            });          
+            return Ok(ApiResponse<string>.Ok("Logout successful. JWT cleared."));
+             }
 
-        [Authorize]
+
+            [Authorize]
         [HttpGet("me")]
         public async Task<ActionResult<TableEmployee>> Me()   
         {
