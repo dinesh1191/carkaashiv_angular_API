@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BCrypt;
 using BCrypt.Net;
+using Microsoft.Extensions.Configuration.UserSecrets;
 
 namespace carkaashiv_angular_API.Controllers
 {
@@ -22,63 +23,87 @@ namespace carkaashiv_angular_API.Controllers
     {
         private readonly IConfiguration _config;
         private readonly AppDbContext _context;
+
         public AuthController(IConfiguration config, AppDbContext context)
         {
             _config = config;
             _context = context;
         }
-
-
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            try{
-                // Find employee by email 
-                var employee = await _context.tbl_emp.FirstOrDefaultAsync(e => e.Email == request.Username);
-                if(employee == null)
+            try {
+                //check if input is looks like an email (Employee) or phone(user/customer)
+
+                bool isEmail = request.Username.Contains("@");
+                if (isEmail)
                 {
-                    return Unauthorized(ApiResponse<string>.Fail("User not found"));
-                }
-                // Validate password
-                if (!BCrypt.Net.BCrypt.Verify(request.Password, employee.EmpPasswordHash))
-                {
-                    return Unauthorized(ApiResponse<string>.Fail("Invalid password"));
+                    // Find employee by email 
+                    var employee = await _context.tbl_emp.FirstOrDefaultAsync(e => e.Email == request.Username);
+                    if (employee == null)
+                    {
+                        return Unauthorized(ApiResponse<string>.Fail("User not found"));
+                    }
+                    // Validate password
+                    if (!BCrypt.Net.BCrypt.Verify(request.Password, employee.EmpPasswordHash))
+                    {
+                        return Unauthorized(ApiResponse<string>.Fail("Invalid password"));
+
+                    }
+                    // Generate JWT with userId,name and role
+                    var token = GenerateJwtToken(employee.Id, employee.Name!, employee.Role!);
+                    //  Create cookie
+                    SetJwtCookie(token);                                   
+                    //Return success
+                    return Ok(ApiResponse<object>.Ok("Login Successful", new
+                    {
+                        employee.Email,
+                        employee.Role,
+                        employee.Id
+                    }));
 
                 }
-                // Generate JWT with userId,name and role
-                var token = GenerateJwtToken(employee);
-
-                //Create cookie
-                var cookieOptions = new CookieOptions
+                else
+                //======Customer login flow=======
                 {
-                    HttpOnly = true,
-                    Secure = true, //use true only in production (HTTPS)required for SameSite=None
-                    SameSite = SameSiteMode.None, //crucial for cross - origin(Angular <-> .NET)
-                    Expires = DateTime.UtcNow.AddHours(1)
+                    // Find user/customer 
+                    var customer = await _context.tbl_user.FirstOrDefaultAsync(c => c.Phone == request.Username);
+                    {
+                        if (customer == null)
+                        {
+                            return Unauthorized(ApiResponse<string>.Fail("User not found"));
+                        }
+                       
+                    }
+                    // Validate Password
+                    if (!BCrypt.Net.BCrypt.Verify(request.Password, customer.PasswordHash))
+                    {
+                        return Unauthorized(ApiResponse<string>.Fail("Invalid Password"));
+                    }
 
-                };
-                Response.Cookies.Append("jwtToken", token, cookieOptions);
-                //Return success
-                return Ok(ApiResponse<object>.Ok("Login Successful",new
-                {
-                    employee.Email,
-                    employee.Role,
-                    employee.Id
-                }));
-
+                    // Generate JWT with userId,name and role
+                    var token = GenerateJwtToken(customer.Id, customer.Name!, "customer"); //explicitly passing role as customer
+                    SetJwtCookie(token);
+                    return Ok(ApiResponse<object>.Ok("Customer Login Successful",
+                        new
+                        {
+                            customer.Phone,
+                            customer.Role,
+                            customer.Id
+                        }));
+                }              
             }
             catch (Exception ex)
             {
                 return StatusCode(500, ApiResponse<string>.Fail($"Server error:{ex.Message}"));
             }
 
-           
         }
 
 
         // Helper method to generate JWT token
 
-        private string GenerateJwtToken(TableEmployee employee)
+        private string GenerateJwtToken(int userId,string nameOrEmail,string role)
         {
             var jwtSettings = _config.GetSection("Jwt");
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
@@ -86,11 +111,11 @@ namespace carkaashiv_angular_API.Controllers
 
             var claims = new[]
             {
-                new Claim("userId", employee.Id.ToString()),         
-                new Claim(ClaimTypes.Role,employee.Role!),// ! explicitly setting field will not be null
-                new Claim(ClaimTypes.Name,employee.Name!)
-                
+                new Claim("userId",userId.ToString()),
+                new Claim(ClaimTypes.Role,role),
+                new Claim(ClaimTypes.Name,nameOrEmail)
             };
+
             var token = new JwtSecurityToken(
                 issuer: jwtSettings["Issuer"],
                 audience: jwtSettings["Audience"],
@@ -99,7 +124,22 @@ namespace carkaashiv_angular_API.Controllers
                 signingCredentials: creds
                 );
             return new JwtSecurityTokenHandler().WriteToken(token);
+          }
+
+
+        //Helper method for cookie setup
+        private void SetJwtCookie(string token)
+        {
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddHours(1),
+            };
+            Response.Cookies.Append("jwtToken", token, cookieOptions);
         }
+
 
 
         [HttpPost("logout")]
@@ -155,5 +195,6 @@ namespace carkaashiv_angular_API.Controllers
                 return StatusCode(500, new { message = ex.Message, stack = ex.StackTrace });
             }
         }
+      
     }
 }
