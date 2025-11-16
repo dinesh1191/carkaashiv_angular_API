@@ -1,4 +1,6 @@
 using carkaashiv_angular_API.Data;
+using carkaashiv_angular_API.Interfaces;
+using carkaashiv_angular_API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -69,7 +71,7 @@ builder.Services.AddAuthentication(options =>
 // Database connection
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+builder.Services.AddScoped<IAuthService, AuthService>();
 //Enable CORS(for angular app)
 builder.Services.AddCors(options =>
 {

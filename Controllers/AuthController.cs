@@ -1,19 +1,21 @@
-﻿using carkaashiv_angular_API.Data;
+﻿using BCrypt;
+using BCrypt.Net;
+using carkaashiv_angular_API.Data;
+using carkaashiv_angular_API.DTOs;
+using carkaashiv_angular_API.Interfaces;
 using carkaashiv_angular_API.Models;
 using carkaashiv_angular_API.Models.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using BCrypt;
-using BCrypt.Net;
-using Microsoft.Extensions.Configuration.UserSecrets;
 
 namespace carkaashiv_angular_API.Controllers
 {
@@ -23,16 +25,19 @@ namespace carkaashiv_angular_API.Controllers
     {
         private readonly IConfiguration _config;
         private readonly AppDbContext _context;
+        private readonly IAuthService _service;
 
-        public AuthController(IConfiguration config, AppDbContext context)
+        public AuthController(IConfiguration config, AppDbContext context, IAuthService service)
         {
             _config = config;
             _context = context;
+            _service = service;
         }
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            try {
+            try
+            {
                 //check if input is looks like an email (Employee) or phone(user/customer)
 
                 bool isEmail = request.Username.Contains("@");
@@ -53,7 +58,7 @@ namespace carkaashiv_angular_API.Controllers
                     // Generate JWT with userId,name and role
                     var token = GenerateJwtToken(employee.Id, employee.Name!, employee.Role!);
                     //  Create cookie
-                    SetJwtCookie(token);                                   
+                    SetJwtCookie(token);
                     //Return success
                     return Ok(ApiResponse<object>.Ok("Login Successful", new
                     {
@@ -73,7 +78,7 @@ namespace carkaashiv_angular_API.Controllers
                         {
                             return Unauthorized(ApiResponse<string>.Fail("User not found"));
                         }
-                       
+
                     }
                     // Validate Password
                     if (!BCrypt.Net.BCrypt.Verify(request.Password, customer.PasswordHash))
@@ -91,7 +96,7 @@ namespace carkaashiv_angular_API.Controllers
                             customer.Role,
                             customer.Id
                         }));
-                }              
+                }
             }
             catch (Exception ex)
             {
@@ -103,7 +108,7 @@ namespace carkaashiv_angular_API.Controllers
 
         // Helper method to generate JWT token
 
-        private string GenerateJwtToken(int userId,string nameOrEmail,string role)
+        private string GenerateJwtToken(int userId, string nameOrEmail, string role)
         {
             var jwtSettings = _config.GetSection("Jwt");
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
@@ -124,7 +129,7 @@ namespace carkaashiv_angular_API.Controllers
                 signingCredentials: creds
                 );
             return new JwtSecurityTokenHandler().WriteToken(token);
-          }
+        }
 
 
         //Helper method for cookie setup
@@ -150,44 +155,52 @@ namespace carkaashiv_angular_API.Controllers
             {
                 HttpOnly = true,
                 Secure = true,
-                SameSite = SameSiteMode.None,              
-            });          
+                SameSite = SameSiteMode.None,
+            });
             return Ok(ApiResponse<string>.Ok("Logout successful. JWT cleared."));
-             }
+        }
 
 
-            [Authorize]
+        [Authorize]
         [HttpGet("me")]
-        public async Task<ActionResult<TableEmployee>> Me()   
+        public async Task<ActionResult<object>> Me()
         {
-                   
 
-          try
+
+            try
             {
                 // Extract user info from token              
                 var userClaimId = User.Claims.FirstOrDefault(C => C.Type == "userId")?.Value;
-               
+                var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
                 if (userClaimId == null)
                 {
-                    return Unauthorized(ApiResponse<TableEmployee>.Fail("Unauthorised"));
+                    return Unauthorized(ApiResponse<object>.Fail("Unauthorised"));
 
                 }
-                // Fetch from DB
-                var employee = await _context.tbl_emp.FindAsync(int.Parse(userClaimId));
+                object? userData = null;
 
-                if (employee == null)
+                if (_context == null)
+                    throw new Exception("DB context is not injected properly!");
+                if (role == "customer")
                 {
-                    return NotFound(ApiResponse<TableEmployee>.Fail("Id not found"));
+                    userData = await _context.tbl_user
+                        .Where(c => c.Id == int.Parse(userClaimId))
+                        .Select(c => new { c.Id, c.Name, c.Email, c.Role })
+                        .FirstOrDefaultAsync();
                 }
-                var response = new
+                else // staff or admin
                 {
-                    employee.Name,
-                    employee.Id,
-                    employee.Email,
-                    employee.Role
-                };
-                return Ok(ApiResponse<object>.Ok("Employee fetched details successfully", response));
+                    userData = await _context.tbl_emp
+                .Where(e => e.Id == int.Parse(userClaimId))
+                .Select(e => new { e.Id, e.Name, e.Email, e.Role })
+                .FirstOrDefaultAsync();
 
+                }
+                if (userData == null)
+                    return NotFound(ApiResponse<object>.Fail("User not found"));
+
+                return Ok(ApiResponse<object>.Ok("User fetched successfully", userData));
             }
             catch (Exception ex)
             {
@@ -195,6 +208,37 @@ namespace carkaashiv_angular_API.Controllers
                 return StatusCode(500, new { message = ex.Message, stack = ex.StackTrace });
             }
         }
-      
+
+
+
+        [HttpPost("register-user")]
+        public async Task<IActionResult> RegisterUser(RegisterUserDto dto)
+        {
+            var success = await _service.RegisterUserAsync(dto);
+            if (!success)
+                return BadRequest("Mobile number already registered.");
+
+            return Ok("User Registered sucessfully");
+        }
+
+
+
+
+        [HttpPost("register-employee")]
+        public async Task<IActionResult> RegisterEmployee(RegisterEmployeeDto dto)
+        {
+
+            var success = await _service.RegisterEmployeeAsync(dto);
+            if (!success)
+                return BadRequest("Email already Exists");
+            return Ok("Employee Registered sucessfully");
+
+
+
+
+        }
+
+
+
     }
 }
