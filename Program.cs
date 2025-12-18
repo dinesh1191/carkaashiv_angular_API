@@ -80,8 +80,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAngularApp",policy =>
     {
         policy.WithOrigins(
-                "http://localhost:4200", // local Angular app URL
-                 "https://carkaashiv-angular-api.onrender.com") // production
+                "http://localhost:4200", // local Angular app frontend URL
+                 "https://dulcet-rolypoly-2f31fc.netlify.app") // production frontend url
                    .AllowAnyHeader()
                    .AllowAnyMethod() // get,post,put,update
                    .AllowCredentials(); // important for cookies
