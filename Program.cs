@@ -73,27 +73,26 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IAuthService, AuthService>();
+
 //Enable CORS(for angular app)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAngularApp",
-        builder =>
-        {
-            builder.WithOrigins(
+    options.AddPolicy("AllowAngularApp",policy =>
+    {
+        policy.WithOrigins(
                 "http://localhost:4200", // local Angular app URL
-                 "https://carkaashiv-angular-api.onrender.com")//production
+                 "https://carkaashiv-angular-api.onrender.com") // production
                    .AllowAnyHeader()
-                   .AllowAnyMethod() // get.post,put,update
+                   .AllowAnyMethod() // get,post,put,update
                    .AllowCredentials(); // important for cookies
-        });
+    });
 });
 // Configure the HTTP request pipeline.
 var app = builder.Build();
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAngularApp");
-// Use authentication & authorization middleware
-app.UseAuthentication();
+app.UseAuthentication();// Use authentication first & then authorization middleware
 app.UseAuthorization();
 
 app.MapControllers();
