@@ -26,8 +26,10 @@ namespace carkaashiv_angular_API.Services
             }
             var user = new TableUser
             {
-                Name = dto.FullName,
-                Phone = dto.phone
+                Name = dto.Name,
+                Phone = dto.phone,
+                Email = dto.Email,
+                Role = dto.Role
             };
             user.PasswordHash = _userHasher.HashPassword(user, dto.password);
             await _db.tbl_user.AddAsync(user);

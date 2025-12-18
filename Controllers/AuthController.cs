@@ -210,19 +210,19 @@ namespace carkaashiv_angular_API.Controllers
         }
 
 
+        //======Customer/user REgistration flow=======
 
         [HttpPost("register-user")]
         public async Task<IActionResult> RegisterUser(RegisterUserDto dto)
         {
             var success = await _service.RegisterUserAsync(dto);
             if (!success)
-                return BadRequest("Mobile number already registered.");
-
-            return Ok("User Registered sucessfully");
+                return NotFound(ApiResponse<object>.Fail("Mobile number already registered."));
+      
+           
+            return Ok(ApiResponse<object>.Ok("User Registered sucessfully"));
         }
-
-
-
+        //======Employee Registration flow=======
 
         [HttpPost("register-employee")]
         public async Task<IActionResult> RegisterEmployee(RegisterEmployeeDto dto)
@@ -230,15 +230,8 @@ namespace carkaashiv_angular_API.Controllers
 
             var success = await _service.RegisterEmployeeAsync(dto);
             if (!success)
-                return BadRequest("Email already Exists");
-            return Ok("Employee Registered sucessfully");
-
-
-
-
+                return NotFound(ApiResponse<object>.Fail("Email already Exists"));              
+            return Ok(ApiResponse<object>.Ok ("Employee Registered sucessfully"));
         }
-
-
-
     }
 }
