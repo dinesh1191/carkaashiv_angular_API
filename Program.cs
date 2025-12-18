@@ -79,9 +79,11 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAngularApp",
         builder =>
         {
-            builder.WithOrigins("http://localhost:4200") // Angular app URL
+            builder.WithOrigins(
+                "http://localhost:4200", // local Angular app URL
+                 "https://carkaashiv-angular-api.onrender.com")//production
                    .AllowAnyHeader()
-                   .AllowAnyMethod()
+                   .AllowAnyMethod() // get.post,put,update
                    .AllowCredentials(); // important for cookies
         });
 });
