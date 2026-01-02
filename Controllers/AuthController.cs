@@ -33,6 +33,20 @@ namespace carkaashiv_angular_API.Controllers
             _context = context;
             _service = service;
         }
+        [HttpGet("db-test")]
+        public async Task<IActionResult> TestDb()
+        {
+            try
+            {
+                await _context.Database.OpenConnectionAsync();
+                return Ok("Database connected");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {

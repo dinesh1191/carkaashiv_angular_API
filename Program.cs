@@ -15,7 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-builder.Services.AddHealthChecks(); // Add health checks
+builder.Services.AddHealthChecks(); // Add health checks api came live and db
 
 
 
@@ -27,7 +27,8 @@ if (builder.Environment.IsDevelopment())
 {
     //local developement -> SQL server
     builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(connectionString));
+     options.UseSqlServer(connectionString));
+       
 }
 else
 {
@@ -118,5 +119,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/db");
+
 app.Run();
 
