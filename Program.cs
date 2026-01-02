@@ -20,33 +20,24 @@ builder.Services.AddHealthChecks(); // Add health checks
 
 
 // Database connection
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IAuthService, AuthService>();
-
-//var connectionString =
-// builder.Configuration.GetConnectionString("DefaultConnection");
-
-//builder.Services.AddDbContext<AppDbContext>(options =>
-//    options.UseNpgsql(connectionString));
-
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-//builder.Services.AddDbContext<AppDbContext>(options =>
-//{
-//    //if (builder.Environment.IsDevelopment())
-//    //{
-//    //    // Local dev (SQL Server)
-//    //    options.UseSqlServer(connectionString);
-//    //}
-//    //else
-//    //{
-//    //    // Production (Render – PostgreSQL)
-//    //    options.UseNpgsql(connectionString);
-//    //}
-//});
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+if (builder.Environment.IsDevelopment())
+{
+    //local developement -> SQL server
+    builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(connectionString));
+}
+else
+{
+    //Production(Redner) -> PostgreSQL
+    builder.Services.AddDbContext<AppDbContext>(options =>
+    {
+        options.UseNpgsql(connectionString);
+    });
+}
+
 
 
 
