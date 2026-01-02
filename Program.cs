@@ -17,6 +17,39 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks(); // Add health checks
 
+
+
+// Database connection
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+//var connectionString =
+// builder.Configuration.GetConnectionString("DefaultConnection");
+
+//builder.Services.AddDbContext<AppDbContext>(options =>
+//    options.UseNpgsql(connectionString));
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+//builder.Services.AddDbContext<AppDbContext>(options =>
+//{
+//    //if (builder.Environment.IsDevelopment())
+//    //{
+//    //    // Local dev (SQL Server)
+//    //    options.UseSqlServer(connectionString);
+//    //}
+//    //else
+//    //{
+//    //    // Production (Render – PostgreSQL)
+//    //    options.UseNpgsql(connectionString);
+//    //}
+//});
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
+
+
+
 // JWT configuration 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 
@@ -69,10 +102,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Database connection
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddScoped<IAuthService, AuthService>();
+
 
 //Enable CORS(for angular app)
 builder.Services.AddCors(options =>
