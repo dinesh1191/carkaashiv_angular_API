@@ -21,23 +21,36 @@ builder.Services.AddHealthChecks(); // Add health checks api came live and db
 
 // Database connection
 builder.Services.AddScoped<IAuthService, AuthService>();
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")); // use only on migration local to prod db
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    Console.WriteLine(connectionString);
+});
+//builder.Services.AddScoped<IAuthService, AuthService>();
+//var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-if (builder.Environment.IsDevelopment())
-{
-    //local developement -> SQL server
-    builder.Services.AddDbContext<AppDbContext>(options =>
-     options.UseSqlServer(connectionString));
-       
-}
-else
-{
-    //Production(Redner) -> PostgreSQL
-    builder.Services.AddDbContext<AppDbContext>(options =>
-    {
-        options.UseNpgsql(connectionString);
-    });
-}
+//        Console.WriteLine(builder.Configuration.GetConnectionString("DefaultConnection"));
+//if (builder.Environment.IsDevelopment())
+//{
+//    //points local developement -> SQL server
+//    builder.Services.AddDbContext<AppDbContext>(options =>
+//    options.UseNpgsql(connectionString));
+//    // options.UseSqlServer(connectionString));
+//    Console.WriteLine(builder.Configuration.GetConnectionString("DefaultConnection"), connectionString);
+
+
+//}
+//else
+//{
+//    //points Production(Redner) -> PostgreSQL
+//    builder.Services.AddDbContext<AppDbContext>(options =>
+//    {
+//        options.UseNpgsql(connectionString);
+//        Console.WriteLine(builder.Configuration.GetConnectionString("DefaultConnection"));
+
+//    });
+//}
 
 
 
