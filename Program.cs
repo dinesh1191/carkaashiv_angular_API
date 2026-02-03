@@ -3,6 +3,7 @@ using carkaashiv_angular_API.Interfaces;
 using carkaashiv_angular_API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -13,45 +14,38 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 // Add services to the container.
-
-builder.Services.AddControllers();
 builder.Services.AddHealthChecks(); // Add health checks api came live and db
+builder.Services.AddControllers();
 
 
-
-// Database connection
+/***Database connection handles both prod and local**/
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddDbContext<AppDbContext>(options =>
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+if (builder.Environment.IsDevelopment())
 {
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")); // use only on migration local to prod db
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    Console.WriteLine(connectionString);
-});
-//builder.Services.AddScoped<IAuthService, AuthService>();
-//var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    /***points local developement -> SQL server **/
+    builder.Services.AddDbContext<AppDbContext>(options =>
+    {
+     //  options.UseSqlServer(connectionString);//uncomment when pointing local dev mssql server
+        options.UseNpgsql(connectionString); // uncomment when pointing prod neon server
+    });  
+}
+else
+{
+    /***points Production(Redner) -> PostgreSQL**/
+    builder.Services.AddDbContext<AppDbContext>(options =>
+    {
+        options.UseNpgsql(connectionString);      
 
-//        Console.WriteLine(builder.Configuration.GetConnectionString("DefaultConnection"));
-//if (builder.Environment.IsDevelopment())
-//{
-//    //points local developement -> SQL server
-//    builder.Services.AddDbContext<AppDbContext>(options =>
-//    options.UseNpgsql(connectionString));
-//    // options.UseSqlServer(connectionString));
-//    Console.WriteLine(builder.Configuration.GetConnectionString("DefaultConnection"), connectionString);
+    });
+}
 
-
-//}
-//else
-//{
-//    //points Production(Redner) -> PostgreSQL
-//    builder.Services.AddDbContext<AppDbContext>(options =>
-//    {
-//        options.UseNpgsql(connectionString);
-//        Console.WriteLine(builder.Configuration.GetConnectionString("DefaultConnection"));
-
-//    });
-//}
-
+var cs = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(cs))
+{
+    throw new Exception("Connection string not found");
+}
 
 
 
@@ -67,7 +61,7 @@ if (string.IsNullOrEmpty(jwtKey))
 
 builder.Services.AddAuthentication(options =>
 {
-    //options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+   //options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     //options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
@@ -80,8 +74,13 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+        ClockSkew = TimeSpan.Zero
+    
+
+
     };
+
     // to extract token from cookie
     options.Events = new JwtBearerEvents
     {
@@ -91,6 +90,9 @@ builder.Services.AddAuthentication(options =>
             var logger = context.HttpContext.RequestServices
                .GetRequiredService<ILoggerFactory>()
                .CreateLogger("JWT");
+            //Console.WriteLine("JWT VALID Issuer: " + jwtSettings["Issuer"]);
+            //Console.WriteLine("JWT VALID Audience: " + jwtSettings["Audience"]);
+            //Console.WriteLine("JWT VALID Key Len: " + jwtKey?.Length);
 
             if (context.Request.Cookies.ContainsKey("jwtToken"))
             {
@@ -117,19 +119,20 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(
                 "http://localhost:4200", // local Angular app frontend URL
                  "https://dulcet-rolypoly-2f31fc.netlify.app") // production frontend domain  url
-                   .AllowAnyHeader()
+                   .AllowAnyHeader() // for security remove it later
                    .AllowAnyMethod() // get,post,put,update
                    .AllowCredentials(); // important for cookies
     });
 });
-// Configure the HTTP request pipeline.
-var app = builder.Build();
 
+
+
+var app = builder.Build();
+// Configure the HTTP request pipeline.
 app.UseHttpsRedirection();
 app.UseCors("AllowAngularApp");
 app.UseAuthentication();// Use authentication first & then authorization middleware
 app.UseAuthorization();
-
 app.MapControllers();
 app.MapHealthChecks("/health");
 app.MapHealthChecks("/health/db");

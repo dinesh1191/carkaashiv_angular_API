@@ -142,21 +142,39 @@ namespace carkaashiv_angular_API.Controllers
                 expires: DateTime.UtcNow.AddHours(1),// token valid for one hour
                 signingCredentials: creds
                 );
+            Console.WriteLine("JWT CREATE Issuer: " + jwtSettings["Issuer"]);
+            Console.WriteLine("JWT CREATE Audience: " + jwtSettings["Audience"]);
+            Console.WriteLine("JWT CREATE Key Len: " + jwtSettings["Key"]?.Length);
+
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
 
-        //Helper method for cookie setup
+        //Helper method for cookie setup handle both prod and dev environment
+        //private void SetJwtCookie(string token)
+        //{
+        //    var cookieOptions = new CookieOptions
+        //    {
+        //        HttpOnly = true,
+        //        Secure = true,
+        //        SameSite = SameSiteMode.None,
+        //        Expires = DateTime.UtcNow.AddSeconds(30),
+        //    };
+        //    Response.Cookies.Append("jwtToken", token, cookieOptions);
+        //}
         private void SetJwtCookie(string token)
         {
+            var isProduction = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "PRODUCTION";
             var cookieOptions = new CookieOptions
             {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None,
-                Expires = DateTime.UtcNow.AddHours(1),
+                HttpOnly = true,               
+                Secure = true,   // Required for SameSite=None (local + prod)              
+                SameSite = SameSiteMode.None,    // Angular SPA → API (cross-site)XHR
+                Expires = DateTime.UtcNow.AddMinutes(isProduction ? 20 : 30), //prod token expires faster
+                Path = "/"
             };
             Response.Cookies.Append("jwtToken", token, cookieOptions);
+
         }
 
 
@@ -236,6 +254,8 @@ namespace carkaashiv_angular_API.Controllers
            
             return Ok(ApiResponse<object>.Ok("User Registered sucessfully"));
         }
+
+
         //======Employee Registration flow=======
 
         [HttpPost("register-employee")]
