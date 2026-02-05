@@ -69,8 +69,6 @@ namespace carkaashiv_angular_API.Models
         public string? Role { get; set; }
 
 
-        [Column("idt")]  // date time on idt column  db 
-        public DateTime CreatedAt { get; set; }
 
     }
     public class TableEmployee

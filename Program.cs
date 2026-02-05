@@ -18,7 +18,7 @@ builder.Services.AddHealthChecks(); // Add health checks api came live and db
 builder.Services.AddControllers();
 
 
-/***Database connection handles both prod and local**/
+/*** Database connection handles both prod and local**/
 builder.Services.AddScoped<IAuthService, AuthService>();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -27,8 +27,8 @@ if (builder.Environment.IsDevelopment())
     /***points local developement -> SQL server **/
     builder.Services.AddDbContext<AppDbContext>(options =>
     {
-     //  options.UseSqlServer(connectionString);//uncomment when pointing local dev mssql server
-        options.UseNpgsql(connectionString); // uncomment when pointing prod neon server
+         options.UseSqlServer(connectionString);//uncomment when pointing local dev mssql server
+       // options.UseNpgsql(connectionString); // uncomment when pointing prod neon server
     });  
 }
 else

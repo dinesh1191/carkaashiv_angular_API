@@ -249,7 +249,7 @@ namespace carkaashiv_angular_API.Controllers
         {
             var success = await _service.RegisterUserAsync(dto);
             if (!success)
-                return NotFound(ApiResponse<object>.Fail("Mobile number already registered."));
+                return Conflict(ApiResponse<object>.Fail("Mobile number already registered."));
       
            
             return Ok(ApiResponse<object>.Ok("User Registered sucessfully"));
