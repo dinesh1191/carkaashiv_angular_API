@@ -150,18 +150,7 @@ namespace carkaashiv_angular_API.Controllers
         }
 
 
-        //Helper method for cookie setup handle both prod and dev environment
-        //private void SetJwtCookie(string token)
-        //{
-        //    var cookieOptions = new CookieOptions
-        //    {
-        //        HttpOnly = true,
-        //        Secure = true,
-        //        SameSite = SameSiteMode.None,
-        //        Expires = DateTime.UtcNow.AddSeconds(30),
-        //    };
-        //    Response.Cookies.Append("jwtToken", token, cookieOptions);
-        //}
+        //Helper method for cookie setup handle both prod and dev environment        
         private void SetJwtCookie(string token)
         {
             var isProduction = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "PRODUCTION";
@@ -242,7 +231,7 @@ namespace carkaashiv_angular_API.Controllers
         }
 
 
-        //======Customer/user REgistration flow=======
+        //======Customer(User) Registration Flow=======
 
         [HttpPost("register-user")]
         public async Task<IActionResult> RegisterUser(RegisterUserDto dto)
