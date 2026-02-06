@@ -99,12 +99,6 @@ namespace carkaashiv_angular_API.Models
         [Required, StringLength(255)]
         [Column("emp_pass")]
         public string? EmpPasswordHash { get; set; }
-
-
-        [Column("idt")]  // date time on idt column  db 
-        public DateTime CreatedAt { get; set; }
-
-
     }
 
 
