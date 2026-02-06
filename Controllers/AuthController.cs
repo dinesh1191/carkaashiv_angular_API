@@ -264,7 +264,7 @@ namespace carkaashiv_angular_API.Controllers
 
             var success = await _service.RegisterEmployeeAsync(dto);
             if (!success)
-                return NotFound(ApiResponse<object>.Fail("Email already Exists"));              
+                return Conflict(ApiResponse<object>.Fail("Email already Exists!"));              
             return Ok(ApiResponse<object>.Ok ("Employee Registered sucessfully"));
         }
     }

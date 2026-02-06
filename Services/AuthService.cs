@@ -46,7 +46,7 @@ namespace carkaashiv_angular_API.Services
             var emp = new TableEmployee
             {
                 
-                Name = dto.FullName,
+                Name = dto.Name,
                 Phone = dto.Phone,
                 Email = dto.Email,
                 Role = dto.Role
