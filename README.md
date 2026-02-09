@@ -31,18 +31,22 @@ The API follows a layered architecture with clear separation of concerns using C
 ---
 
 ## Project Structure
+
+```
 ├── Controllers
 ├── Services
 ├── DTOs
 ├── Entities
 ├── Data
 ├── db
-│ └── migrations
-│ ├── mssql
-│ └── postgresql
+│   └── migrations
+│       ├── mssql
+│       └── postgresql
 ├── appsettings.json
 ├── appsettings.Development.json
 └── Program.cs
+```
+
 ---
 
 ## Database Strategy
@@ -56,88 +60,108 @@ Database schema is managed using **Entity Framework Core**, with database-specif
 - All changes are tracked via migration scripts
 
 Example migration folders:
-db/migrations/mssql
-db/migrations/postgresql
-
+- `db/migrations/mssql`
+- `db/migrations/postgresql`
 
 ---
 
 ## Environment Configuration
 
- Development (Local MSSQL)
+### Development (Local MSSQL)
 
 ```json
-"ConnectionStrings": {
-  "DefaultConnection": "Server=DESKTOP-XXXX;Database=car_kaashiv_web_app;Trusted_Connection=True;TrustServerCertificate=True"
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=DESKTOP-XXXX;Database=car_kaashiv_web_app;Trusted_Connection=True;TrustServerCertificate=True"
+  }
 }
+```
 
-Production (Neon PostgreSQL)
+### Production (Neon PostgreSQL)
+
 Configured using Render environment secrets
 
-****No credentials committed to source control
+**No credentials committed to source control**
 
-API Endpoints (Sample)
-Method	Endpoint	Description
-POST	/api/auth/register	Register new user
-POST	/api/auth/login	Login user
-GET	/api/auth/me	Get logged-in user
-GET	/health/db	Database health check
+---
 
-**Error Handling**
-400 → Validation errors
+## API Endpoints (Sample)
 
-401 → Unauthorized
+| Method | Endpoint           | Description                    |
+|--------|-------------------|--------------------------------|
+| POST   | /api/auth/register | Register new user              |
+| POST   | /api/auth/login    | Login user                     |
+| GET    | /api/auth/me       | Get logged-in user             |
+| GET    | /health/db         | Database health check          |
 
-409 → Conflict (eg: mobile number already registered)
+---
 
-**Consistent response format:**
+## Error Handling
 
+The API uses consistent HTTP status codes and a unified response format.
+
+- **400** → Validation and bad request errors
+- **401** → Unauthorized access
+- **409** → Conflict (eg: mobile number already registered)
+- **500** → Internal server errors (unexpected failures)
+
+### Error Response Format
+
+```json
 {
   "success": false,
   "message": "Mobile number already registered.",
   "data": null
 }
+```
 
-**Deployment & CI/CD**
+---
 
-Backend is containerized using Docker
+## Deployment & CI/CD
 
-Deployed on Render
+- Backend is containerized using Docker
+- Deployed on Render
+- Automated build and deployment using GitHub Actions
 
-Automated build and deployment using GitHub Actions
+---
 
-**Local Setup**
-git clone <repo-url>
+## Local Setup
+
+```bash
+git clone <repository-url>
 cd CarKaashiv.Api
 dotnet restore
 dotnet run
-**Trust HTTPS locally:**
+```
 
+### Trust HTTPS locally
+
+```bash
 dotnet dev-certs https --trust
+```
 
-**Key Learnings Implemented**
+---
 
-Proper HTTP status code usage (409 Conflict)
+## Key Learnings Implemented
 
-DB-driven timestamps (DEFAULT CURRENT_TIMESTAMP, SYSDATETIME)
+- Proper HTTP status code usage (409 Conflict)
+- DB-driven timestamps (CURRENT_TIMESTAMP, SYSDATETIME)
+- Secure JWT cookie handling with Angular
+- Environment-based configuration management
+- Strict database migration discipline (local → production)
 
-JWT cookie handling with Angular
+---
 
-Environment-safe configuration management
+## Notes
 
-Strict DB migration discipline (local → production)
+- Frontend is handled separately using Angular
+- Snackbar is used for frontend notifications
+- Database schema is versioned via migration scripts only
+- Sensitive configuration values (DB credentials, JWT secrets) are managed using environment variables and are not committed to source control
 
-**Notes**
+---
 
-Frontend handled separately (Angular)
+## Author
 
-Snackbar used for frontend notifications
-
-Database is versioned via migration scripts, not manual edits
-
-Sensitive configuration values are managed using environment variables only
-
-**Author**
-Dinesh Varadhan
+**Dinesh Varadhan**  
 Full Stack Developer (.NET + Angular)
-
