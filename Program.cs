@@ -16,10 +16,13 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddHealthChecks(); // Add health checks api came live and db
 builder.Services.AddControllers();
-
-
-/*** Database connection handles both prod and local**/
+//DbContext registration
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<PartService>();
+
+/*** Database connection block handles both prod and local **/
+
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 if (builder.Environment.IsDevelopment())
@@ -28,7 +31,7 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddDbContext<AppDbContext>(options =>
     {
          options.UseSqlServer(connectionString);//uncomment when pointing local dev mssql server
-       // options.UseNpgsql(connectionString); // uncomment when pointing prod neon server
+      // options.UseNpgsql(connectionString); // uncomment when pointing prod neon server
     });  
 }
 else
