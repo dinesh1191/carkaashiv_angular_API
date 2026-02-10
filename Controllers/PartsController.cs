@@ -1,6 +1,8 @@
 ﻿using carkaashiv_angular_API.Data;
+using carkaashiv_angular_API.DTOs;
 using carkaashiv_angular_API.Models;
 using carkaashiv_angular_API.Models.Auth;
+using carkaashiv_angular_API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore; 
@@ -15,24 +17,25 @@ namespace carkaashiv_angular_API.Controllers
     {
 
         private readonly AppDbContext _context;
+        private readonly PartService _partService;
 
-        public PartsController(AppDbContext context)
+        public PartsController(AppDbContext context, PartService partService)
         {
             _context = context;
+            _partService = partService;
         }
 
-        // GET: api/<PartsController>
-        [HttpGet("getParts")]
-
-        public async Task<ActionResult<IEnumerable<TablePart>>> GetParts()
+        // GET: api/parts
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<TablePart>>> GetAllParts()
         {
             var parts = await _context.tbl_part.ToListAsync();
             return Ok(Models.Auth.ApiResponse<IEnumerable<TablePart>>.Ok("Parts fetched successfully",parts));
          }
 
         // GET api/<PartsController>/5 by id
-        [HttpGet("{id}")]
-        public async Task<ActionResult<TablePart>> GetPart(int id)
+        [HttpGet("parts/{id}")]
+        public async Task<ActionResult<TablePart>> GetPartById(int id)
         {
             try
             {
@@ -50,21 +53,23 @@ namespace carkaashiv_angular_API.Controllers
             }
         }
 
-        // POST api/<PartsController> for new part creation on db
-        [HttpPost("addPart")]
-        public async Task<ActionResult<TablePart>> addPart(TablePart part) 
+        // POST /api/parts for new part creation on db
+        [HttpPost]
+        public async Task<IActionResult> CreatePart([FromBody] PartCreateDto dto) 
         {
+            var part = await _partService.CreatePartAsync(dto);
 
-            _context.tbl_part.Add(part);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetPart), new {id = part.PartId}, 
-                new { message = "Part added sucessfully",data = part });
+            return CreatedAtAction(
+                nameof(GetPartById),
+                new { id = part.PartId },
+                new { message = "Part added successfully", data = part }
+            );
         }
 
-        // PUT api/<PartsController>/5 for updating existing part on db
-
+  
+        //Put api/parts/{id} for updating existing part on db
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPart(int id ,TablePart part)
+        public async Task<IActionResult> UpdatePart(int id,[FromBody] TablePart part)
         {
             if(id != part.PartId)
             {
@@ -75,14 +80,15 @@ namespace carkaashiv_angular_API.Controllers
             return Ok(new {message = "Part updated successfully"});
         }
 
-        // DELETE api/<PartsController>/5
+
+        //Delete /api/parts/{id}
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeletePart(int id)
         {
             var part = await _context.tbl_part.FindAsync(id);
             if(part == null)
             {
-               // return NotFound();
+              
                return NotFound(Models.Auth.ApiResponse<object>.Fail("Part not found"));
             }
             try
