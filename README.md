@@ -1,32 +1,38 @@
-**CarKaashiv 2.0 – API**
+# CarKaashiv 2.0 – API
 
 Backend REST API for CarKaashiv 2.0, built with ASP.NET Core and designed using a decoupled architecture to support Angular frontend clients.
 
-**Tech Stack**
+---
 
-ASP.NET Core Web API
+## Tech Stack
 
-Entity Framework Core
+- ASP.NET Core Web API
+- Entity Framework Core
+- JWT Authentication using HttpOnly Cookies
+- MSSQL (Local Development)
+- PostgreSQL (Neon – Production)
+- CORS enabled for Angular frontend
 
-JWT Authentication (Cookie-based)
+---
 
-MSSQL (Local Development)
+## Architecture Overview
 
-PostgreSQL (Neon – Production)
+The API follows a layered architecture with clear separation of concerns using Controllers, Services, Repositories, and DTOs to ensure maintainability and scalability.
 
-CORS enabled for Angular frontend
+---
 
- **Authentication**
+## Authentication
 
-JWT token generated on login
+- JWT token generated on successful login
+- Token stored securely in **HttpOnly cookies**
+- `auth/me` endpoint validates authenticated users
+- Cookie-based JWT authentication supports Angular `withCredentials`
 
-Token stored securely in HttpOnly cookies
+---
 
-auth/me endpoint validates authenticated users
+## Project Structure
 
-Cookie-based auth supports Angular withCredentials
-
-📂 **Project Structure**
+```
 ├── Controllers
 ├── Services
 ├── DTOs
@@ -39,86 +45,123 @@ Cookie-based auth supports Angular withCredentials
 ├── appsettings.json
 ├── appsettings.Development.json
 └── Program.cs
+```
 
-**Database Strategy**
+---
 
-Local Development: MSSQL
+## Database Strategy
 
-Production: Neon PostgreSQL
+- **Local Development:** MSSQL
+- **Production:** Neon PostgreSQL (Serverless)
 
-Database changes are tracked using versioned SQL migration scripts
+Database schema is managed using **Entity Framework Core**, with database-specific migration scripts versioned separately for MSSQL and PostgreSQL.
 
-No manual schema changes in production
+- No manual schema changes in production
+- All changes are tracked via migration scripts
 
-**Example migration folders**
-db/migrations/mssql
-db/migrations/postgresql
+Example migration folders:
+- `db/migrations/mssql`
+- `db/migrations/postgresql`
 
-Environment Configuration
-Development (Local MSSQL)
-"ConnectionStrings": {
-  "DefaultConnection": "Server=DESKTOP-XXXX;Database=car_kaashiv_web_app;Trusted_Connection=True;TrustServerCertificate=True"
+---
+
+## Environment Configuration
+
+### Development (Local MSSQL)
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=DESKTOP-XXXX;Database=car_kaashiv_web_app;Trusted_Connection=True;TrustServerCertificate=True"
+  }
 }
+```
 
-Production (Neon PostgreSQL)
+### Production (Neon PostgreSQL)
 
-Configured via Render environment secrets.
+Configured using Render environment secrets
 
- **API Endpoints (Sample)**
-Method	Endpoint	Description
-POST	/api/auth/register	Register new user
-POST	/api/auth/login	Login user
-GET	/api/auth/me	Get logged-in user
-GET	/health/db	DB health check
+**No credentials committed to source control**
 
- **Error Handling**
+---
 
-400 → Validation errors
+## API Endpoints (Sample)
 
-401 → Unauthorized
+| Method | Endpoint           | Description                    |
+|--------|-------------------|--------------------------------|
+| POST   | /api/auth/register | Register new user              |
+| POST   | /api/auth/login    | Login user                     |
+| GET    | /api/auth/me       | Get logged-in user             |
+| GET    | /health/db         | Database health check          |
 
-409 → Duplicate / Conflict (eg: phone already registered)
+---
 
-Consistent response format:
+## Error Handling
 
+The API uses consistent HTTP status codes and a unified response format.
+
+- **400** → Validation and bad request errors
+- **401** → Unauthorized access
+- **409** → Conflict (eg: mobile number already registered)
+- **500** → Internal server errors (unexpected failures)
+
+### Error Response Format
+
+```json
 {
   "success": false,
   "message": "Mobile number already registered.",
   "data": null
 }
+```
 
- **Local Setup**
-git clone <repo-url>
+---
+
+## Deployment & CI/CD
+
+- Backend is containerized using Docker
+- Deployed on Render
+- Automated build and deployment using GitHub Actions
+
+---
+
+## Local Setup
+
+```bash
+git clone <repository-url>
 cd CarKaashiv.Api
 dotnet restore
 dotnet run
+```
 
+### Trust HTTPS locally
 
-**Trust HTTPS locally:**
-
+```bash
 dotnet dev-certs https --trust
+```
 
-**Key Learnings Implemented**
+---
 
-Proper HTTP status codes (409 Conflict)
+## Key Learnings Implemented
 
-DB-driven timestamps (DEFAULT CURRENT_TIMESTAMP / SYSDATETIME)
+- Proper HTTP status code usage (409 Conflict)
+- DB-driven timestamps (CURRENT_TIMESTAMP, SYSDATETIME)
+- Secure JWT cookie handling with Angular
+- Environment-based configuration management
+- Strict database migration discipline (local → production)
 
-JWT cookie handling with Angular
+---
 
-Environment-safe DB configuration
+## Notes
 
-DB migration discipline (local → prod)
+- Frontend is handled separately using Angular
+- Snackbar is used for frontend notifications
+- Database schema is versioned via migration scripts only
+- Sensitive configuration values (DB credentials, JWT secrets) are managed using environment variables and are not committed to source control
 
-**Notes**
+---
 
-Frontend handled separately (Angular)
+## Author
 
-Snackbar used for frontend notifications
-
-DB is versioned via migration scripts, not manual edits
-
- **Author**
-
-Dinesh Varadhan
+**Dinesh Varadhan**  
 Full Stack Developer (.NET + Angular)
