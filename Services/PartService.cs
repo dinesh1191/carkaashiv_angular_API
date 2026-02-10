@@ -31,5 +31,20 @@ namespace carkaashiv_angular_API.Services
              
             return part;
         }
-    }
+
+        public async Task<TablePart?> UpdatePartAsync(int id, PartUpdateDto dto)
+        {
+            var part = await _context.tbl_part.FindAsync(id);
+            if(part == null)
+            {
+                return null;
+            }
+            part.PName = dto.Name;
+            part.PDetail = dto.Description;
+            part.PPrice = dto.Price;
+            part.PStock = dto.stock;
+            await _context.SaveChangesAsync();
+            return part;
+        }    
+   }
 }

@@ -69,15 +69,16 @@ namespace carkaashiv_angular_API.Controllers
   
         //Put api/parts/{id} for updating existing part on db
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePart(int id,[FromBody] TablePart part)
+        public async Task<IActionResult> UpdatePart(int id,[FromBody] PartUpdateDto dto)
         {
-            if(id != part.PartId)
+            var updatePart = await _partService.UpdatePartAsync(id, dto);
+            if (updatePart == null)
+                return NotFound(new { message = "Part not found" });
+            return Ok(new
             {
-                return BadRequest();
-            }
-            _context.Entry(part).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-            return Ok(new {message = "Part updated successfully"});
+                message = "Part updated successfully",
+                data = updatePart
+            });
         }
 
 
