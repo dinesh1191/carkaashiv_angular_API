@@ -29,22 +29,26 @@ namespace carkaashiv_angular_API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TablePart>>> GetAllParts()
         {
-            var parts = await _context.tbl_part.ToListAsync();
-            return Ok(Models.Auth.ApiResponse<IEnumerable<TablePart>>.Ok("Parts fetched successfully",parts));
+
+            var parts = await _partService.GetAllPartsAsync();
+            return Ok(ApiResponse<IEnumerable<PartResponseDto>>
+                    .Ok("Parts fetched successfully", parts));
+           
          }
 
         // GET api/<PartsController>/5 by id
-        [HttpGet("parts/{id}")]
+        //Controller route + Action route = final endpoint
+        [HttpGet("{id}")]
         public async Task<ActionResult<TablePart>> GetPartById(int id)
         {
             try
             {
-                var part = await _context.tbl_part.FindAsync(id);
+                var part = await _partService.GetPartByIdAsync(id);
                 if (part == null)
                 {
-                    return NotFound(ApiResponse<TablePart>.Fail("Part not found"));
+                    return NotFound(ApiResponse<object>.Fail("Part not found"));
                 }
-                return Ok(ApiResponse<TablePart>.Ok("Part fetched successfully", part));
+                return Ok(ApiResponse<PartResponseDto>.Ok("Part fetched successfully", part));
 
             }
             catch (Exception ex)            {
@@ -86,23 +90,19 @@ namespace carkaashiv_angular_API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeletePart(int id)
         {
-            var part = await _context.tbl_part.FindAsync(id);
-            if(part == null)
-            {
-              
-               return NotFound(Models.Auth.ApiResponse<object>.Fail("Part not found"));
-            }
+           
             try
             {
-                _context.tbl_part.Remove(part);
-                await _context.SaveChangesAsync();
-                return Ok(Models.Auth.ApiResponse<object>.Ok("Part deleted successfully"));
-            }
+                var deleted = await _partService.DeletePartAsync(id);
+                if (!deleted)
+                    return NotFound(ApiResponse<object>.Fail("Part not found"));
+                return Ok(ApiResponse<object>.Ok("Part deleted successfully"));            
+              }
             catch (DbUpdateException )
             {
-                return BadRequest(Models.Auth.ApiResponse<object>.Fail("Cannot delete part beacuse it is linked with orders"));
-            }
-          
+                return BadRequest(
+                    ApiResponse<object>.Fail("Cannot delete part beacuse it is linked with orders"));
+            }          
         }
     }
 }
