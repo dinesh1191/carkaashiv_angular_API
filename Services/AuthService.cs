@@ -4,7 +4,6 @@ using carkaashiv_angular_API.DTOs;
 using carkaashiv_angular_API.Interfaces;
 using carkaashiv_angular_API.Models;
 using carkaashiv_angular_API.Models.Auth;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace carkaashiv_angular_API.Services
@@ -56,11 +55,6 @@ namespace carkaashiv_angular_API.Services
             return true;
         }
 
-        //public interface IAuthService
-        //{
-        //    Task<AuthResult> LoginAsync(LoginRequest request);
-        //}
-
         public async Task<AuthResult> LoginAsync(LoginRequest request)
         {
           
@@ -75,12 +69,12 @@ namespace carkaashiv_angular_API.Services
                     };
 
                 }
+
                 bool isEmail = request.Username.Contains("@");
                 if (isEmail)
                 {
                     var employee = await _db.tbl_emp.FirstOrDefaultAsync(e => e.Email == request.Username);
-                    if (employee == null ||
-                          !BCrypt.Net.BCrypt.Verify(request.Password, employee.EmpPasswordHash))
+                    if (employee == null || !BCrypt.Net.BCrypt.Verify(request.Password, employee.EmpPasswordHash))
                     {
                         return new AuthResult
                         {
@@ -91,8 +85,7 @@ namespace carkaashiv_angular_API.Services
                     }
                     var responseDto = new LoginResponseDto
                     {
-                        Id = employee.Id,
-                        //Name = employee.Name,
+                        Id = employee.Id,                       
                         Email = employee.Email,
                         Role = employee.Role,
                     };
@@ -104,39 +97,38 @@ namespace carkaashiv_angular_API.Services
                         Token = null // taken generated in controller
                     };
                 }
-                else
+                            
+                     else
 
-                {
-                    var customer = await _db.tbl_user
+                     {
+                //======Customer login flow=======
+                var customer = await _db.tbl_user
                     .FirstOrDefaultAsync(c => c.Phone == request.Username);
 
-                    if (customer == null ||
-                        !BCrypt.Net.BCrypt.Verify(request.Password, customer.PasswordHash))
-                    {
-                        return new AuthResult
-                        {
-                            Success = false,
-                            Message = "Invalid Credentials"
-                        };
-
-                    }
-                    var responseDto = new LoginResponseDto
-                    {
-                        Id = customer.Id,
-                        // Name = customer.Name,
-                        Email = customer.Email,
-                        Role = customer.Role,
-
-                    };
+                if (customer == null || !BCrypt.Net.BCrypt.Verify(request.Password, customer.PasswordHash))
+                {
                     return new AuthResult
                     {
-                        Success = true,
-                        Message = "Login Sucessful",
-                        Data = responseDto,
+                        Success = false,
+                        Message = "Invalid Credentials"
                     };
 
                 }
+                var responseDto = new LoginResponseDto
+                {
+                    Id = customer.Id,                    
+                    Email = customer.Email,
+                    Role = customer.Role,
+                };
+                return new AuthResult
+                {
+                    Success = true,
+                    Message = "Login Sucessful",
+                    Data = responseDto,
+                };
+
             }
+        }
             
 
 
