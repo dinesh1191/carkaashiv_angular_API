@@ -87,7 +87,8 @@ namespace carkaashiv_angular_API.Models
         [Column("emp_phone")]
         public string? Phone { get; set; }
 
-        [Required, StringLength(50)]
+        [Required, StringLength(50)]       
+
         [Column("emp_email")]
         public string? Email { get; set; }
 
@@ -99,6 +100,8 @@ namespace carkaashiv_angular_API.Models
         [Required, StringLength(255)]
         [Column("emp_pass")]
         public string? EmpPasswordHash { get; set; }
+
+        public bool IsActive {  get; set; } = true; // Explicit
     }
 
 

@@ -15,13 +15,11 @@ namespace carkaashiv_angular_API.Controllers
 
     public class PartsController : ControllerBase
     {
-
-        private readonly AppDbContext _context;
+      
         private readonly PartService _partService;
 
-        public PartsController(AppDbContext context, PartService partService)
-        {
-            _context = context;
+        public PartsController(PartService partService)
+        {            
             _partService = partService;
         }
 

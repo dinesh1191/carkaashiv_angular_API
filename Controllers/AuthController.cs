@@ -5,17 +5,19 @@ using carkaashiv_angular_API.DTOs;
 using carkaashiv_angular_API.Interfaces;
 using carkaashiv_angular_API.Models;
 using carkaashiv_angular_API.Models.Auth;
+using carkaashiv_angular_API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration.UserSecrets;
+
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using static carkaashiv_angular_API.Services.AuthService;
 
 namespace carkaashiv_angular_API.Controllers
 {
@@ -26,12 +28,16 @@ namespace carkaashiv_angular_API.Controllers
         private readonly IConfiguration _config;
         private readonly AppDbContext _context;
         private readonly IAuthService _service;
+        private readonly AuthService _authService;
+     
 
-        public AuthController(IConfiguration config, AppDbContext context, IAuthService service)
+        public AuthController(IConfiguration config, AppDbContext context, IAuthService service, AuthService AuthService)
         {
             _config = config;
             _context = context;
             _service = service;
+            _authService = AuthService;
+
         }
         [HttpGet("db-test")]
         public async Task<IActionResult> TestDb()
@@ -50,78 +56,111 @@ namespace carkaashiv_angular_API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            try
+            var result = await _authService.LoginAsync(request);
+            if (!result.Success)
             {
-                //check if input is looks like an email (Employee) or phone(user/customer)
-
-                bool isEmail = request.Username.Contains("@");
-                if (isEmail)
-                {
-                    // Find employee by email 
-                    var employee = await _context.tbl_emp.FirstOrDefaultAsync(e => e.Email == request.Username);
-                    if (employee == null)
-                    {
-                        return Unauthorized(ApiResponse<string>.Fail("User not found"));
-                    }
-                    // Validate password
-                    if (!BCrypt.Net.BCrypt.Verify(request.Password, employee.EmpPasswordHash))
-                    {
-                        return Unauthorized(ApiResponse<string>.Fail("Invalid password"));
-
-                    }
-                    // Generate JWT with userId,name and role
-                    var token = GenerateJwtToken(employee.Id, employee.Name!, employee.Role!);
-                    //  Create cookie
-                    SetJwtCookie(token);
-                    //Return success
-                    return Ok(ApiResponse<object>.Ok("Login Successful", new
-                    {
-                        employee.Email,
-                        employee.Role,
-                        employee.Id
-                    }));
-
-                }
-                else
-                //======Customer login flow=======
-                {
-                    // Find user/customer 
-                    var customer = await _context.tbl_user.FirstOrDefaultAsync(c => c.Phone == request.Username);
-                    {
-                        if (customer == null)
-                        {
-                            return Unauthorized(ApiResponse<string>.Fail("User not found"));
-                        }
-
-                    }
-                    // Validate Password
-                    if (!BCrypt.Net.BCrypt.Verify(request.Password, customer.PasswordHash))
-                    {
-                        return Unauthorized(ApiResponse<string>.Fail("Invalid Password"));
-                    }
-
-                    // Generate JWT with userId,name and role
-                    var token = GenerateJwtToken(customer.Id, customer.Name!, "customer"); //explicitly passing role as customer
-                    SetJwtCookie(token);
-                    return Ok(ApiResponse<object>.Ok("Customer Login Successful",
-                        new
-                        {
-                            customer.Phone,
-                            customer.Role,
-                            customer.Id
-                        }));
-                }
+                // CLEAR EXISTING COOKIE if any
+                Response.Cookies.Delete("jwtToken");
+                return Unauthorized(ApiResponse<string>.Fail(result.Message));
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ApiResponse<string>.Fail($"Server error:{ex.Message}"));
-            }
+            var token = GenerateJwtToken(
+                result.Data!.Id,
+                result.Data.Role!,
+                result.Data.Email!
+               );
 
+            SetJwtCookie(token);
+
+            return Ok(ApiResponse<LoginResponseDto>.Ok(
+                result.Message,
+                result.Data));
         }
 
 
-        // Helper method to generate JWT token
 
+        //if (!ModelState.IsValid)
+        //    return BadRequest(ApiResponse<string>.Fail("Invalid input"));
+        //try
+        //{
+        //    //check if input is looks like an email (Employee) or phone(user/customer)
+        //    bool isEmail = request.Username.Contains("@");
+
+        //    string dummyHash = "$2a$11$C6UzMDM.H6dfI/f/IKcEe.6o9pJp2sS1Xg1JxE0hH6E3D1e9wXy6e";
+
+        //    if (isEmail)
+        //    {
+        //        var employee = await _context.tbl_emp
+
+        //            .FirstOrDefaultAsync(e => e.Email == request.Username);
+        //        if (employee == null)
+        //        {
+        //            BCrypt.Net.BCrypt.Verify(request.Password, dummyHash);
+        //            return Unauthorized(ApiResponse<string>.Fail("Invalid Credentials"));
+
+        //        }
+        //        if (!BCrypt.Net.BCrypt.Verify(request.Password, employee.EmpPasswordHash))
+        //            return Unauthorized(ApiResponse<String>.Fail("Invalid credentials"));
+        //        if (!employee.IsActive)
+        //        {
+        //            return Unauthorized(ApiResponse<string>.Fail("Account disabled"));
+        //        }
+        //        return GenerateLoginResponse(employee.Id,/*** employee.Name,**/employee.Email, employee.Role, 
+        //            new
+        //            {   employee.Id,
+        //                employee.Name,
+        //                employee.Email,
+        //                employee.Role,
+        //            });
+        //    }                            
+
+        //    else
+        //    //======Customer login flow=======
+        //    {
+        //        // Find user/customer 
+        //        var customer = await _context.tbl_user.FirstOrDefaultAsync(c => c.Phone == request.Username);
+        //        {
+        //            if (customer == null)
+        //            {
+        //                return Unauthorized(ApiResponse<string>.Fail("User not found"));
+        //            }
+
+        //        }
+        //        // Validate Password
+        //        if (!BCrypt.Net.BCrypt.Verify(request.Password, customer.PasswordHash))
+        //        {
+        //            return Unauthorized(ApiResponse<string>.Fail("Invalid Password"));
+        //        }
+
+        //        // Generate JWT with userId,name and role
+        //        var token = GenerateJwtToken(customer.Id, customer.Name!, "customer"); //explicitly passing role as customer
+        //        SetJwtCookie(token);
+        //        return Ok(ApiResponse<object>.Ok("Customer Login Successful",
+        //            new
+        //            {
+        //                customer.Phone,
+        //                customer.Role,
+        //                customer.Id
+        //            }));
+        //    }
+        //}
+        //catch (Exception ex)
+        //{
+        //    return StatusCode(500, ApiResponse<string>.Fail($"Server error:{ex.Message}"));
+        //}
+
+   
+
+
+        private IActionResult GenerateLoginResponse(int userId, string name, string role, object responseData)
+        {
+            var token = GenerateJwtToken(userId, name, role);
+
+            SetJwtCookie(token);
+
+            return Ok(ApiResponse<LoginResponse>.Ok("Login successful"));
+        }
+
+        // Helper method to generate JWT token
         private string GenerateJwtToken(int userId, string nameOrEmail, string role)
         {
             var jwtSettings = _config.GetSection("Jwt");
@@ -253,8 +292,11 @@ namespace carkaashiv_angular_API.Controllers
 
             var success = await _service.RegisterEmployeeAsync(dto);
             if (!success)
-                return Conflict(ApiResponse<object>.Fail("Email already Exists!"));              
-            return Ok(ApiResponse<object>.Ok ("Employee Registered sucessfully"));
+                return Conflict(ApiResponse<object>.Fail("Email already Exists!"));
+
+            return Ok(ApiResponse<object>.Ok("Employee registered successfully"));
+
         }
+
     }
 }

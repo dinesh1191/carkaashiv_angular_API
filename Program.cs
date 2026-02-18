@@ -18,7 +18,13 @@ builder.Services.AddHealthChecks(); // Add health checks api came live and db
 builder.Services.AddControllers();
 //DbContext registration
 builder.Services.AddScoped<IAuthService, AuthService>();
+//Services to handle business logic
+builder.Services.AddHttpContextAccessor(); //lets your service know:"Who is calling this API?"Without passing userId manually from controller
 builder.Services.AddScoped<PartService>();
+builder.Services.AddScoped<EmployeeService>();
+builder.Services.AddScoped<AuthService>();
+
+
 
 /*** Database connection block handles both prod and local **/
 
@@ -64,8 +70,8 @@ if (string.IsNullOrEmpty(jwtKey))
 
 builder.Services.AddAuthentication(options =>
 {
-   //options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    //options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
 {
@@ -92,11 +98,7 @@ builder.Services.AddAuthentication(options =>
         {
             var logger = context.HttpContext.RequestServices
                .GetRequiredService<ILoggerFactory>()
-               .CreateLogger("JWT");
-            //Console.WriteLine("JWT VALID Issuer: " + jwtSettings["Issuer"]);
-            //Console.WriteLine("JWT VALID Audience: " + jwtSettings["Audience"]);
-            //Console.WriteLine("JWT VALID Key Len: " + jwtKey?.Length);
-
+               .CreateLogger("JWT");    
             if (context.Request.Cookies.ContainsKey("jwtToken"))
             {
                 context.Token = context.Request.Cookies["jwtToken"];
