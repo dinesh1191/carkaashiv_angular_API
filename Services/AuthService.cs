@@ -5,6 +5,7 @@ using carkaashiv_angular_API.Interfaces;
 using carkaashiv_angular_API.Models;
 using carkaashiv_angular_API.Models.Auth;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace carkaashiv_angular_API.Services
 {
@@ -129,12 +130,41 @@ namespace carkaashiv_angular_API.Services
 
             }
         }
-            
+        public interface IAuthService
+        {
+            Task<object?> GetCurrentUserAsync(ClaimsPrincipal user);
+
+        }
+
+        public async Task<object?> GetCurrentUserAsync(ClaimsPrincipal user)
+        {
+            var userClaimId = user.FindFirst("userId")?.Value;
+            var role = user.FindFirst(ClaimTypes.Role)?.Value;
+
+            if (string.IsNullOrEmpty(userClaimId))
+                return null;
+
+            int userId = int.Parse(userClaimId);
+
+            if (role == "customer")
+            {
+                return await _db.tbl_user
+                    .Where(c => c.Id == userId)
+                    .Select(c => new { c.Id, c.Name, c.Email, c.Role })
+                    .FirstOrDefaultAsync();
+            }
+            else
+            {
+                return await _db.tbl_emp
+                    .Where(e => e.Id == userId)
+                    .Select(e => new { e.Id, e.Name, e.Email, e.Role })
+                    .FirstOrDefaultAsync();
+            }
+        }
+    
 
 
-            
-            
-    }
+}
 
 }
 

@@ -15,7 +15,9 @@ using System.Text;
 namespace carkaashiv_angular_API.Controllers
 {
     [Route("api/[Controller]")]
+
     [ApiController]
+   
     public class AuthController : Controller
     {
         private readonly IConfiguration _config;
@@ -113,46 +115,12 @@ namespace carkaashiv_angular_API.Controllers
         [HttpGet("me")]
         public async Task<ActionResult<object>> Me()
         {
-            try
-            {
-                // Extract user info from token              
-                var userClaimId = User.Claims.FirstOrDefault(C => C.Type == "userId")?.Value;
-                var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
 
-                if (userClaimId == null)
-                {
-                    return Unauthorized(ApiResponse<object>.Fail("Unauthorised"));
-
-                }
-                object? userData = null;
-
-                if (_context == null)
-                    throw new Exception("DB context is not injected properly!");
-                if (role == "customer")
-                {
-                    userData = await _context.tbl_user
-                        .Where(c => c.Id == int.Parse(userClaimId))
-                        .Select(c => new { c.Id, c.Name, c.Email, c.Role })
-                        .FirstOrDefaultAsync();
-                }
-                else // staff or admin
-                {
-                    userData = await _context.tbl_emp
-                .Where(e => e.Id == int.Parse(userClaimId))
-                .Select(e => new { e.Id, e.Name, e.Email, e.Role })
-                .FirstOrDefaultAsync();
-
-                }
-                if (userData == null)
-                    return NotFound(ApiResponse<object>.Fail("User not found"));
-
-                return Ok(ApiResponse<object>.Ok("User fetched successfully", userData));
-            }
-            catch (Exception ex)
-            {
-
-                return StatusCode(500, new { message = ex.Message, stack = ex.StackTrace });
-            }
+            var userData = await _authService.GetCurrentUserAsync(User);
+            if (userData == null)
+                return Unauthorized(ApiResponse<object>.Fail("Unauthorized"));
+            return Ok(ApiResponse<object>.Ok("User fetched successfully", userData));
+            
         }
 
         // Helper method to generate JWT token

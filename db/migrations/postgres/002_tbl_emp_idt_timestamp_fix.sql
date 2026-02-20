@@ -6,3 +6,9 @@
  */
 ALTER TABLE tbl_emp
 ALTER COLUMN idt SET DEFAULT CURRENT_TIMESTAMP;
+
+
+ALTER TABLE tbl_emp
+RENAME COLUMN isactive TO "IsActive";
+
+select * from tbl_emp t 

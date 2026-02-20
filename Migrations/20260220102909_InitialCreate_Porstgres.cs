@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace carkaashiv_angular_API.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate_Postgres : Migration
+    public partial class InitialCreate_Porstgres : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -39,7 +39,7 @@ namespace carkaashiv_angular_API.Migrations
                     emp_email = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     emp_role = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
                     emp_pass = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    idt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -108,8 +108,7 @@ namespace carkaashiv_angular_API.Migrations
                     u_phone = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     u_email = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     u_pass = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    u_role = table.Column<string>(type: "text", nullable: true),
-                    idt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    u_role = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {

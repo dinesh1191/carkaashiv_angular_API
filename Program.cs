@@ -36,8 +36,8 @@ if (builder.Environment.IsDevelopment())
     /***points local developement -> SQL server **/
     builder.Services.AddDbContext<AppDbContext>(options =>
     {
-         options.UseSqlServer(connectionString);//uncomment when pointing local dev mssql server
-      // options.UseNpgsql(connectionString); // uncomment when pointing prod neon server
+        // options.UseSqlServer(connectionString);//uncomment when pointing local dev mssql server
+           options.UseNpgsql(connectionString); // uncomment when pointing  prod neon server and local postgre sql server
     });  
 }
 else
