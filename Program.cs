@@ -1,5 +1,6 @@
 using carkaashiv_angular_API.Data;
 using carkaashiv_angular_API.Interfaces;
+using carkaashiv_angular_API.Middleware;
 using carkaashiv_angular_API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -28,27 +29,12 @@ builder.Services.AddScoped<AuthService>();
 
 /*** Database connection block handles both prod and local **/
 
-
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-if (builder.Environment.IsDevelopment())
+builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    /***points local developement -> SQL server **/
-    builder.Services.AddDbContext<AppDbContext>(options =>
-    {
-        // options.UseSqlServer(connectionString);//uncomment when pointing local dev mssql server
-           options.UseNpgsql(connectionString); // uncomment when pointing  prod neon server and local postgre sql server
-    });  
-}
-else
-{
-    /***points Production(Redner) -> PostgreSQL**/
-    builder.Services.AddDbContext<AppDbContext>(options =>
-    {
-        options.UseNpgsql(connectionString);      
-
-    });
-}
+    options.UseNpgsql(connectionString);
+});
 
 var cs = builder.Configuration.GetConnectionString("DefaultConnection");
 if (string.IsNullOrEmpty(cs))
@@ -136,6 +122,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 app.UseHttpsRedirection();
 app.UseCors("AllowAngularApp");
+app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseAuthentication();// Use authentication first & then authorization middleware
 app.UseAuthorization();
 app.MapControllers();

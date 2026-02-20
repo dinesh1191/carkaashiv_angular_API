@@ -34,19 +34,7 @@ namespace carkaashiv_angular_API.Controllers
             _authService = AuthService;
 
         }
-        [HttpGet("db-test")]
-        public async Task<IActionResult> TestDb()
-        {
-            try
-            {
-                await _context.Database.OpenConnectionAsync();
-                return Ok("Database connected");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
+  
         //======Customer(User) Registration Flow=======
 
         [HttpPost("register-user")]
@@ -115,13 +103,14 @@ namespace carkaashiv_angular_API.Controllers
         [HttpGet("me")]
         public async Task<ActionResult<object>> Me()
         {
-
+       
             var userData = await _authService.GetCurrentUserAsync(User);
             if (userData == null)
                 return Unauthorized(ApiResponse<object>.Fail("Unauthorized"));
             return Ok(ApiResponse<object>.Ok("User fetched successfully", userData));
-            
+
         }
+        
 
         // Helper method to generate JWT token
         private string GenerateJwtToken(int userId, string nameOrEmail, string role)

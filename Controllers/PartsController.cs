@@ -39,20 +39,12 @@ namespace carkaashiv_angular_API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<TablePart>> GetPartById(int id)
         {
-            try
+            var part = await _partService.GetPartByIdAsync(id);
+            if (part == null)
             {
-                var part = await _partService.GetPartByIdAsync(id);
-                if (part == null)
-                {
-                    return NotFound(ApiResponse<object>.Fail("Part not found"));
-                }
-                return Ok(ApiResponse<PartResponseDto>.Ok("Part fetched successfully", part));
-
+                return NotFound(ApiResponse<object>.Fail("Part not found"));
             }
-            catch (Exception ex)            {
-               
-                return StatusCode(500, new { message = ex.Message, stack = ex.StackTrace });
-            }
+            return Ok(ApiResponse<PartResponseDto>.Ok("Part fetched successfully", part));
         }
 
         // POST /api/parts for new part creation on db

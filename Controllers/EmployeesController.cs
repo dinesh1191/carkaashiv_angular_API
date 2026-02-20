@@ -25,6 +25,7 @@ namespace carkaashiv_angular_API.Controllers
                 return BadRequest(result);
             return Ok(result);
         }
+
         [Authorize(Roles = "admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateByAdmin(int id, EmployeeAdminUpdateDto dto)
