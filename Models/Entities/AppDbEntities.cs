@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace carkaashiv_angular_API.Models
 {
-    public class TablePart
+    public class Part
     {
         [Key]
 
@@ -41,7 +41,7 @@ namespace carkaashiv_angular_API.Models
         public DateTime CreatedAt { get; set; }
 
     }
-    public class TableUser
+    public class User
     {
         [Key]
 
@@ -71,7 +71,7 @@ namespace carkaashiv_angular_API.Models
 
 
     }
-    public class TableEmployee
+    public class Employee
     {
         [Key]
 
@@ -105,7 +105,7 @@ namespace carkaashiv_angular_API.Models
     }
 
 
-    public class TableCart
+    public class Cart
     {
         [Key]
         [Column("cart_id")]
@@ -128,7 +128,7 @@ namespace carkaashiv_angular_API.Models
 
 
 
-    public class TableOrders
+    public class Orders
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -149,7 +149,7 @@ namespace carkaashiv_angular_API.Models
 
     }
 
-    public class TableOrderItems
+    public class OrderItems
     {
         [Key]
         [Column("order_item_id")]

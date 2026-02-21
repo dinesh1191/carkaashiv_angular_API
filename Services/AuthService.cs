@@ -23,7 +23,7 @@ namespace carkaashiv_angular_API.Services
             {
                 return false;
             }
-            var user = new TableUser
+            var user = new User
             {
                 Name = dto.Name,
                 Phone = dto.phone,
@@ -42,7 +42,7 @@ namespace carkaashiv_angular_API.Services
         {
             if (await _db.tbl_emp.AnyAsync(x => x.Email == dto.Email))
                 return false;
-            var emp = new TableEmployee
+            var emp = new Employee
             {
 
                 Name = dto.Name,

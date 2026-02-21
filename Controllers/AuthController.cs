@@ -3,6 +3,7 @@ using carkaashiv_angular_API.Data;
 using carkaashiv_angular_API.DTOs;
 using carkaashiv_angular_API.Interfaces;
 using carkaashiv_angular_API.Models.Auth;
+using carkaashiv_angular_API.Models.Shared;
 using carkaashiv_angular_API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

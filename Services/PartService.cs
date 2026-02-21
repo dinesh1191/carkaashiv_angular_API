@@ -15,9 +15,9 @@ namespace carkaashiv_angular_API.Services
             _context = context;
           
         }
-        public async Task<TablePart> CreatePartAsync(PartCreateDto dto)
+        public async Task<Part> CreatePartAsync(PartCreateDto dto)
         {
-            var part = new TablePart
+            var part = new Part
             {
                 PEmpId = dto.EmployeeId,
                 PName = dto.Name,
@@ -33,7 +33,7 @@ namespace carkaashiv_angular_API.Services
             return part;
         }
 
-        public async Task<TablePart?> UpdatePartAsync(int id, PartUpdateDto dto)
+        public async Task<Part?> UpdatePartAsync(int id, PartUpdateDto dto)
         {
             var part = await _context.tbl_part.FindAsync(id);
             if(part == null)

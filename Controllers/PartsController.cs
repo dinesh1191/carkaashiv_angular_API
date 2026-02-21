@@ -1,11 +1,11 @@
 ﻿using carkaashiv_angular_API.Data;
 using carkaashiv_angular_API.DTOs;
 using carkaashiv_angular_API.Models;
-using carkaashiv_angular_API.Models.Auth;
+using carkaashiv_angular_API.Models.Shared;
 using carkaashiv_angular_API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore; 
+using Microsoft.EntityFrameworkCore;
 
 namespace carkaashiv_angular_API.Controllers
 {
@@ -25,7 +25,7 @@ namespace carkaashiv_angular_API.Controllers
 
         // GET: api/parts
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TablePart>>> GetAllParts()
+        public async Task<ActionResult<IEnumerable<Part>>> GetAllParts()
         {
 
             var parts = await _partService.GetAllPartsAsync();
@@ -37,7 +37,7 @@ namespace carkaashiv_angular_API.Controllers
         // GET api/<PartsController>/5 by id
         //Controller route + Action route = final endpoint
         [HttpGet("{id}")]
-        public async Task<ActionResult<TablePart>> GetPartById(int id)
+        public async Task<ActionResult<Part>> GetPartById(int id)
         {
             var part = await _partService.GetPartByIdAsync(id);
             if (part == null)

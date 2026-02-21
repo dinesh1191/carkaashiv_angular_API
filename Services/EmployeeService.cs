@@ -1,7 +1,7 @@
 ﻿using carkaashiv_angular_API.Data;
 using carkaashiv_angular_API.DTOs;
 using carkaashiv_angular_API.Models;
-using carkaashiv_angular_API.Models.Auth;
+using carkaashiv_angular_API.Models.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -116,7 +116,7 @@ namespace carkaashiv_angular_API.Services
             if (await _context.tbl_emp.AnyAsync(x => x.Email == dto.Email))
                 return ApiResponse<object>.Fail("Email already exists");
 
-            var emp = new TableEmployee
+            var emp = new Employee
             {
                 Name = dto.Name,
                 Phone = dto.Phone,

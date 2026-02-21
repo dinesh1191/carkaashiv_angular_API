@@ -1,4 +1,4 @@
-﻿namespace carkaashiv_angular_API.Models.Auth
+﻿namespace carkaashiv_angular_API.Models.Shared
 {
     public class ApiResponse<T>
     {      
