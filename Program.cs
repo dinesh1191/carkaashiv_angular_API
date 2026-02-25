@@ -21,7 +21,7 @@ builder.Services.AddControllers();
 //Business Services to be registered here
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<PartService>();
+builder.Services.AddScoped<IPartService, PartService>();
 builder.Services.AddScoped<EmployeeService>();
 builder.Services.AddHttpContextAccessor(); //lets your service know:"Who is calling this API?"Without passing userId manually from controller
 

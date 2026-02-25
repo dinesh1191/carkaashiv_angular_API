@@ -1,5 +1,6 @@
 ﻿using carkaashiv_angular_API.Data;
 using carkaashiv_angular_API.DTOs;
+using carkaashiv_angular_API.Interfaces;
 using carkaashiv_angular_API.Models;
 using carkaashiv_angular_API.Models.Shared;
 using carkaashiv_angular_API.Services;
@@ -16,63 +17,58 @@ namespace carkaashiv_angular_API.Controllers
     public class PartsController : ControllerBase
     {
       
-        private readonly PartService _partService;
+        private readonly IPartService _partService;
 
-        public PartsController(PartService partService)
+        public PartsController(IPartService partService)
         {            
             _partService = partService;
         }
 
         // GET: api/parts
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Part>>> GetAllParts()
+        public async Task<IActionResult> GetAllParts()
         {
-
             var parts = await _partService.GetAllPartsAsync();
             return Ok(ApiResponse<IEnumerable<PartResponseDto>>
-                    .Ok("Parts fetched successfully", parts));
-           
-         }
+                .Ok("Parts fetched successfully", parts));
+        }      
 
         // GET api/<PartsController>/5 by id
         //Controller route + Action route = final endpoint
         [HttpGet("{id}")]
-        public async Task<ActionResult<Part>> GetPartById(int id)
+        public async Task<IActionResult> GetPartById(int id)
         {
             var part = await _partService.GetPartByIdAsync(id);
             if (part == null)
-            {
+            
                 return NotFound(ApiResponse<object>.Fail("Part not found"));
-            }
+            
             return Ok(ApiResponse<PartResponseDto>.Ok("Part fetched successfully", part));
         }
 
         // POST /api/parts for new part creation on db
         [HttpPost]
-        public async Task<IActionResult> CreatePart([FromBody] PartCreateDto dto) 
+        public async Task<IActionResult> CreatePart(PartCreateDto dto)
         {
             var part = await _partService.CreatePartAsync(dto);
-
             return CreatedAtAction(
                 nameof(GetPartById),
-                new { id = part.PartId },
-                new { message = "Part added successfully", data = part }
-            );
+                new { id = part.Id },
+                ApiResponse<PartResponseDto>
+                .Ok("Part added successfully", part));
         }
+        
 
-  
+
         //Put api/parts/{id} for updating existing part on db
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePart(int id,[FromBody] PartUpdateDto dto)
+        public async Task<IActionResult> UpdatePart(int id, PartUpdateDto dto)
         {
-            var updatePart = await _partService.UpdatePartAsync(id, dto);
-            if (updatePart == null)
+            var employeeId = int.Parse(User.FindFirst("employeeId")!.Value);
+            var part = await _partService.UpdatePartAsync(id, dto);
+            if (part == null)
                 return NotFound(new { message = "Part not found" });
-            return Ok(new
-            {
-                message = "Part updated successfully",
-                data = updatePart
-            });
+            return Ok(ApiResponse<PartResponseDto>.Ok("Part updated successfully", part));
         }
 
 
@@ -90,8 +86,7 @@ namespace carkaashiv_angular_API.Controllers
               }
             catch (DbUpdateException )
             {
-                return BadRequest(
-                    ApiResponse<object>.Fail("Cannot delete part beacuse it is linked with orders"));
+                return BadRequest(ApiResponse<object>.Fail("Cannot delete part beacuse it is linked with orders"));
             }          
         }
     }
