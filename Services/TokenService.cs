@@ -1,5 +1,6 @@
 ﻿using Azure;
 using carkaashiv_angular_API.Interfaces;
+using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -58,6 +59,16 @@ namespace carkaashiv_angular_API.Services
             };
             context?.Response.Cookies.Append("jwtToken", token, cookieOptions);
 
+        }
+        public void ClearJwtCookie(HttpResponse response)
+        {
+            response.Cookies.Delete("jwtToken", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Path = "/"
+            });
         }
 
     }

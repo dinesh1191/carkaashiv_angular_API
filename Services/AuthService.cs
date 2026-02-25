@@ -5,6 +5,7 @@ using carkaashiv_angular_API.Interfaces;
 using carkaashiv_angular_API.Models;
 using carkaashiv_angular_API.Models.Auth;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Security.Claims;
 
 namespace carkaashiv_angular_API.Services
@@ -12,16 +13,17 @@ namespace carkaashiv_angular_API.Services
     
     public class AuthService : IAuthService
     {
-        private readonly AppDbContext _db;
+        private readonly AppDbContext _context;
 
-        public AuthService(AppDbContext db)
+        public AuthService(AppDbContext context)
         {
-            _db = db;
-           
+         
+            _context = context;
+
         }
         public async Task<bool> RegisterUserAsync(RegisterUserDto dto)
         {
-            if (await _db.tbl_user.AnyAsync(x => x.Phone == dto.phone))
+            if (await _context.tbl_user.AnyAsync(x => x.Phone == dto.phone))
             {
                 return false;
             }
@@ -33,8 +35,8 @@ namespace carkaashiv_angular_API.Services
                 Role = dto.Role
             };
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.password);           
-            await _db.tbl_user.AddAsync(user);
-            await _db.SaveChangesAsync();
+            await _context.tbl_user.AddAsync(user);
+            await _context.SaveChangesAsync();
             return true;
         }
 
@@ -42,7 +44,7 @@ namespace carkaashiv_angular_API.Services
 
         public async Task<bool> RegisterEmployeeAsync(RegisterEmployeeDto dto)
         {
-            if (await _db.tbl_emp.AnyAsync(x => x.Email == dto.Email))
+            if (await _context.tbl_emp.AnyAsync(x => x.Email == dto.Email))
                 return false;
             var emp = new Employee
             {
@@ -53,8 +55,8 @@ namespace carkaashiv_angular_API.Services
                 Role = dto.Role
             };           
             emp.EmpPasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
-            await _db.tbl_emp.AddAsync(emp);
-            await _db.SaveChangesAsync();
+            await _context.tbl_emp.AddAsync(emp);
+            await _context.SaveChangesAsync();
             return true;
         }
 
@@ -75,7 +77,7 @@ namespace carkaashiv_angular_API.Services
                 bool isEmail = request.Username.Contains("@");
                 if (isEmail)
                 {
-                    var employee = await _db.tbl_emp.FirstOrDefaultAsync(e => e.Email == request.Username);
+                    var employee = await _context.tbl_emp.FirstOrDefaultAsync(e => e.Email == request.Username);
                     if (employee == null || !BCrypt.Net.BCrypt.Verify(request.Password, employee.EmpPasswordHash))
                     {
                         return new AuthResult
@@ -104,7 +106,7 @@ namespace carkaashiv_angular_API.Services
 
                      {
                 //======Customer login flow=======
-                var customer = await _db.tbl_user
+                var customer = await _context.tbl_user
                     .FirstOrDefaultAsync(c => c.Phone == request.Username);
 
                 if (customer == null || !BCrypt.Net.BCrypt.Verify(request.Password, customer.PasswordHash))
@@ -145,14 +147,14 @@ namespace carkaashiv_angular_API.Services
 
             if (role == "customer")
             {
-                return await _db.tbl_user
+                return await _context.tbl_user
                     .Where(c => c.Id == userId)
                     .Select(c => new { c.Id, c.Name, c.Email, c.Role })
                     .FirstOrDefaultAsync();
             }
             else
             {
-                return await _db.tbl_emp
+                return await _context.tbl_emp
                     .Where(e => e.Id == userId)
                     .Select(e => new { e.Id, e.Name, e.Email, e.Role })
                     .FirstOrDefaultAsync();

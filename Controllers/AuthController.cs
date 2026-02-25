@@ -20,8 +20,7 @@ namespace carkaashiv_angular_API.Controllers
     [ApiController]
    
     public class AuthController : Controller
-    {
-           
+    {         
            
         private readonly IAuthService _authService;
         private readonly ITokenService _tokenService;
@@ -90,15 +89,9 @@ namespace carkaashiv_angular_API.Controllers
         public IActionResult Logout()
         {
             //** Delete cookie by name
-            Response.Cookies.Delete("jwtToken", new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None,
-            });
+            _tokenService.ClearJwtCookie(Response);         
             return Ok(ApiResponse<string>.Ok("Logout successful. JWT cleared."));
         }
-
 
         [Authorize]
         [HttpGet("me")]
@@ -110,13 +103,7 @@ namespace carkaashiv_angular_API.Controllers
                 return Unauthorized(ApiResponse<object>.Fail("Unauthorized"));
             return Ok(ApiResponse<object>.Ok("User fetched successfully", userData));
 
-        }
-        
-
-
-
-
-       
+        }      
 
     }
 }
