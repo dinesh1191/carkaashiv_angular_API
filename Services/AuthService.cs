@@ -9,6 +9,7 @@ using System.Security.Claims;
 
 namespace carkaashiv_angular_API.Services
 {
+    
     public class AuthService : IAuthService
     {
         private readonly AppDbContext _db;
@@ -16,6 +17,7 @@ namespace carkaashiv_angular_API.Services
         public AuthService(AppDbContext db)
         {
             _db = db;
+           
         }
         public async Task<bool> RegisterUserAsync(RegisterUserDto dto)
         {
@@ -68,7 +70,6 @@ namespace carkaashiv_angular_API.Services
                         Success = false,
                         Message = "Invalid Input"
                     };
-
                 }
 
                 bool isEmail = request.Username.Contains("@");
@@ -130,11 +131,7 @@ namespace carkaashiv_angular_API.Services
 
             }
         }
-        public interface IAuthService
-        {
-            Task<object?> GetCurrentUserAsync(ClaimsPrincipal user);
-
-        }
+     
 
         public async Task<object?> GetCurrentUserAsync(ClaimsPrincipal user)
         {
@@ -161,7 +158,9 @@ namespace carkaashiv_angular_API.Services
                     .FirstOrDefaultAsync();
             }
         }
-    
+       
+
+
 
 
 }

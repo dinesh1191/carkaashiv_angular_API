@@ -17,13 +17,13 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddHealthChecks(); // Add health checks api came live and db
 builder.Services.AddControllers();
-//DbContext registration
+
+//Business Services to be registered here
 builder.Services.AddScoped<IAuthService, AuthService>();
-//Services to handle business logic
-builder.Services.AddHttpContextAccessor(); //lets your service know:"Who is calling this API?"Without passing userId manually from controller
+builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<PartService>();
 builder.Services.AddScoped<EmployeeService>();
-builder.Services.AddScoped<AuthService>();
+builder.Services.AddHttpContextAccessor(); //lets your service know:"Who is calling this API?"Without passing userId manually from controller
 
 
 
