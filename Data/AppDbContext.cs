@@ -38,6 +38,10 @@ namespace carkaashiv_angular_API.Data
             {
                 entity.Property(e => e.PPrice).HasPrecision(18, 2);
             });
+            modelBuilder.Entity<Part>()
+                    .Property(p => p.CreatedAt)
+                     .HasColumnType("timestamp with time zone")
+                      .HasDefaultValueSql("NOW()");
         }
     }
 

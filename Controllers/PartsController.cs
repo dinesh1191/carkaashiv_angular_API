@@ -64,7 +64,6 @@ namespace carkaashiv_angular_API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePart(int id, PartUpdateDto dto)
         {
-            var employeeId = int.Parse(User.FindFirst("employeeId")!.Value);
             var part = await _partService.UpdatePartAsync(id, dto);
             if (part == null)
                 return NotFound(new { message = "Part not found" });

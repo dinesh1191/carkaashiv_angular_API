@@ -11,9 +11,11 @@ namespace carkaashiv_angular_API.Services
     public class PartService : IPartService
     {
         private readonly AppDbContext _context;
-    public PartService(AppDbContext context)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+    public PartService(AppDbContext context, IHttpContextAccessor accessor)
     {
         _context = context;
+        _httpContextAccessor = accessor;
 
     }
     public async Task<PartResponseDto> CreatePartAsync(PartCreateDto dto)
@@ -26,7 +28,7 @@ namespace carkaashiv_angular_API.Services
             PPrice = dto.Price,
             PStock = dto.Stock,
             ImagePath = "Placeholder",
-            CreatedAt = DateTime.UtcNow
+           // CreatedAt = DateTime.UtcNow  // db fill this column
         };
         _context.tbl_part.Add(part);
         await _context.SaveChangesAsync();
@@ -37,7 +39,12 @@ namespace carkaashiv_angular_API.Services
         {
             var part = await _context.tbl_part.FindAsync(id);
             if (part == null) return null;
+            var userIdClaim = _httpContextAccessor.HttpContext?
+                .User.FindFirst("userId")?.Value;
+            if (string.IsNullOrEmpty(userIdClaim))
+                throw new UnauthorizedAccessException("Invalid token");
             
+            part.PEmpId = int.Parse(userIdClaim);
             part.PName = dto.Name;
             part.PDetail = dto.Description;
             part.PPrice = dto.Price;

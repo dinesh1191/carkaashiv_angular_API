@@ -37,10 +37,11 @@ namespace carkaashiv_angular_API.Models
         [Column("part_image")]
         public string? ImagePath { get; set; }
 
-        [Column("idt")]  // date time on idt column  db 
+        [Column("idt", TypeName = "timestamp with time zone")] // date time on idt column  db 
         public DateTime CreatedAt { get; set; }
 
     }
+
     public class User
     {
         [Key]
