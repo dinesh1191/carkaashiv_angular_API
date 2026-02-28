@@ -49,6 +49,7 @@ namespace carkaashiv_angular_API.Services
             part.PDetail = dto.Description;
             part.PPrice = dto.Price;
             part.PStock = dto.stock;
+            part.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
             return MapToDto(part);
         }
