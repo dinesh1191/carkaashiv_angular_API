@@ -9,7 +9,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Reflection;
 
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,9 +44,7 @@ if (string.IsNullOrEmpty(cs))
     throw new Exception("Connection string not found");
 }
 
-
-
-// JWT configuration 
+/*** JWT configuration ***/ 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 
 // Ensure jwtSettings["Key"] is not null before using it
@@ -70,13 +70,10 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-        ClockSkew = TimeSpan.Zero
-    
+        ClockSkew = TimeSpan.Zero 
+      };
 
-
-    };
-
-    // to extract token from cookie
+    /**To extract token from cookie **/
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
@@ -115,11 +112,56 @@ builder.Services.AddCors(options =>
                    .AllowCredentials(); // important for cookies
     });
 });
+/*** Swagger ***/
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Carkaashiv 2.0 Api",
+        Version="v1",
+        Description = "Backend API for Carkaashiv 2.0 - ASP.NET core + PostgreSQL"
+    });
+    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";    
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter JWT token like: Bearer {your token}"
+    });
 
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
+/*** Swagger ***/
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 // Configure the HTTP request pipeline.
+app.UseSwagger();
+app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseCors("AllowAngularApp");
 app.UseMiddleware<GlobalExceptionMiddleware>();
