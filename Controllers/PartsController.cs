@@ -23,6 +23,30 @@ namespace carkaashiv_angular_API.Controllers
         {            
             _partService = partService;
         }
+        // POST /api/parts for new part creation on db
+        /// <summary>
+        /// Creates a new Part.
+        /// </summary>
+        /// <param name="dto">Part creation details</param>
+        /// <response code="201">Part created successfully</response>
+        /// <response code="400">Invalid input data</response>
+        /// <response code="403">Forbidden for customers</response>
+        /// <response code="401">Unauthorized</response>
+        [ProducesResponseType(typeof(ApiResponse<PartResponseDto>), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [Authorize(Roles = "admin,employee")]
+        [HttpPost]
+        public async Task<IActionResult> CreatePart(PartCreateDto dto)
+        {
+            var part = await _partService.CreatePartAsync(dto);
+            return CreatedAtAction(
+                nameof(GetPartById),
+                new { id = part.Id },
+                ApiResponse<PartResponseDto>
+                .Ok("Part added successfully", part));
+        }
 
         // GET: api/parts
         /// <summary>
@@ -33,6 +57,8 @@ namespace carkaashiv_angular_API.Controllers
         /// </remarks>
         /// <returns>List of parts</returns>
         /// <response code="200">Parts fetched successfully</response>
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<PartResponseDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [Authorize(Roles="admin,employee,customer")]
         [HttpGet]
         public async Task<IActionResult> GetAllParts()
@@ -42,15 +68,17 @@ namespace carkaashiv_angular_API.Controllers
                 .Ok("Parts fetched successfully", parts));
         }
         /// <summary>
-        /// Update a part.
+        /// Get Part by Id.
         /// </summary>
-        /// <param name="id">Update part</param>
-        /// <response code="201">Part Updated successfully</response>
-        /// <response code="403">Forbidden for employee</response>
-
+        /// <param name="id">Get Part by Id</param>
+        /// <response code="200">Part fetched successfully</response>
+        /// <response code="404">Part not found</response>
         // GET api/<PartsController>/5 by id
+        [ProducesResponseType(typeof(ApiResponse<PartResponseDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         //Controller route + Action route = final endpoint
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin,employee,customer")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPartById(int id)
         {
@@ -60,30 +88,6 @@ namespace carkaashiv_angular_API.Controllers
                 return NotFound(ApiResponse<object>.Fail("Part not found"));
 
             return Ok(ApiResponse<PartResponseDto>.Ok("Part fetched successfully", part));
-        }
-
-
-
-
-        // POST /api/parts for new part creation on db
-        /// <summary>
-        /// Creates a new Part.
-        /// </summary>
-        /// <param name="dto">Part creation details</param>
-        /// <response code="201">Part created successfully</response>
-        /// <response code="400">Invalid input data</response>
-        /// <response code="403">Forbidden for customers</response>
-        /// <response code="401">Unauthorized</response>
-        [Authorize(Roles ="admin,employee")]
-        [HttpPost]
-        public async Task<IActionResult> CreatePart(PartCreateDto dto)
-        {
-            var part = await _partService.CreatePartAsync(dto);
-            return CreatedAtAction(
-                nameof(GetPartById),
-                new { id = part.Id },
-                ApiResponse<PartResponseDto>
-                .Ok("Part added successfully", part));
         }
 
 
@@ -99,6 +103,8 @@ namespace carkaashiv_angular_API.Controllers
         /// <response code="403">Forbidden for customer</response>
         /// <response code="401">Unauthorised</response>
         /// <returns></returns>
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         //Put api/parts/{id} for updating existing part on db
         [Authorize(Roles ="admin,employee")]
         [HttpPut("{id}")]
@@ -106,7 +112,7 @@ namespace carkaashiv_angular_API.Controllers
         {
             var part = await _partService.UpdatePartAsync(id, dto);
             if (part == null)
-                return NotFound(new { message = "Part not found" });
+                return NotFound(ApiResponse<object>.Fail("Part not found"));
             return Ok(ApiResponse<PartResponseDto>.Ok("Part updated successfully", part));
         }
 
@@ -122,18 +128,10 @@ namespace carkaashiv_angular_API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeletePart(int id)
         {
-           
-            try
-            {
-                var deleted = await _partService.DeletePartAsync(id);
+             var deleted = await _partService.DeletePartAsync(id);
                 if (!deleted)
                     return NotFound(ApiResponse<object>.Fail("Part not found"));
-                return Ok(ApiResponse<object>.Ok("Part deleted successfully"));            
-              }
-            catch (DbUpdateException )
-            {
-                return BadRequest(ApiResponse<object>.Fail("Cannot delete part beacuse it is linked with orders"));
-            }          
+                return Ok(ApiResponse<object>.Ok("Part deleted successfully"));                    
         }
     }
 }
