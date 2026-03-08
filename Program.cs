@@ -1,3 +1,6 @@
+using Amazon;
+using Amazon.Runtime;
+using Amazon.S3;
 using carkaashiv_angular_API.Data;
 using carkaashiv_angular_API.Interfaces;
 using carkaashiv_angular_API.Middleware;
@@ -8,10 +11,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using System.Reflection;
-
 using Microsoft.OpenApi.Models;
+using System.Reflection;
+using System.Text;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +28,30 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IPartService, PartService>();
 builder.Services.AddScoped<EmployeeService>();
+
+
+
+
+//AWS
+var awsSection = builder.Configuration.GetSection("AWS");
+
+var credentials = new BasicAWSCredentials(
+    awsSection["AccessKey"],
+    awsSection["SecretKey"]
+);
+
+builder.Services.AddSingleton<IAmazonS3>(sp =>
+{
+    return new AmazonS3Client(credentials,
+        RegionEndpoint.GetBySystemName(awsSection["Region"]));
+});
+//builder.Services.AddDefaultAWSOptions(
+//    builder.Configuration.GetSection("AWS").GetAWSOptions()
+//); ;//AWS SDK pick credentials + region automatically appsetting.json
+
+builder.Services.AddScoped<S3UploadServices>();
 builder.Services.AddHttpContextAccessor(); //lets your service know:"Who is calling this API?"Without passing userId manually from controller
+
 
 
 
