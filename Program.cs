@@ -45,10 +45,6 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
     return new AmazonS3Client(credentials,
         RegionEndpoint.GetBySystemName(awsSection["Region"]));
 });
-//builder.Services.AddDefaultAWSOptions(
-//    builder.Configuration.GetSection("AWS").GetAWSOptions()
-//); ;//AWS SDK pick credentials + region automatically appsetting.json
-
 builder.Services.AddScoped<S3UploadServices>();
 builder.Services.AddHttpContextAccessor(); //lets your service know:"Who is calling this API?"Without passing userId manually from controller
 
@@ -177,17 +173,20 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-/*** Swagger ***/
+/*** Swagger page load first when starts ***/
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.MapGet("/", () => Results.Redirect("/swagger"));
+}else
+{
+    app.MapGet("/health", () => Results.Ok("Healthy"));
 }
 // Configure the HTTP request pipeline.
-app.UseSwagger();
-app.UseSwaggerUI();
+
 app.UseHttpsRedirection();
 app.UseCors("AllowAngularApp");
 app.UseMiddleware<GlobalExceptionMiddleware>();
