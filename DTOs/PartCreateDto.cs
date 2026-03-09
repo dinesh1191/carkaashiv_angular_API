@@ -7,6 +7,7 @@ namespace carkaashiv_angular_API.DTOs
 
         [Required(ErrorMessage ="Employee Id is required")]
         public int EmployeeId { get; set; }
+
         [MinLength(3,ErrorMessage ="Parts name must be at least 3 characters")]
         [MaxLength(25,ErrorMessage ="Parts name cannot exceed 25 characters")]
         public string Name { get; set; } = string.Empty;
@@ -18,6 +19,10 @@ namespace carkaashiv_angular_API.DTOs
         [Required(ErrorMessage ="Parts stock is required")]
         [Range(0, int.MaxValue,ErrorMessage ="Stock cannot be negative")]
         public int Stock {  get; set; }
+        
+        [Required]
+        public string ImageUrl { get; set; } = string.Empty;
+
 
     }
 }

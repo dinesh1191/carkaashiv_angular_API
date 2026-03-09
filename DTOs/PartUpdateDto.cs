@@ -14,5 +14,7 @@ namespace carkaashiv_angular_API.DTOs
         [Required]
         [Range(0,int.MaxValue)]
         public int stock { get; set; }
+        [Required]
+        public string ImageUrl { get; set; } = string.Empty;
     }
 }

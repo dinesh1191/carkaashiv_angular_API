@@ -28,7 +28,7 @@
                 ContentType =  contentType
             };
             var uploadUrl = _s3Client.GetPreSignedURL(request);
-            var fileUrl = $"https://{bucket}.s3.ap-south-1.amazon.com/{key}";
+            var fileUrl = $"https://{bucket}.s3.ap-south-1.amazonaws.com/{key}";
                         
             return JsonSerializer.Serialize(new
             {

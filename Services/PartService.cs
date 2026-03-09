@@ -20,15 +20,19 @@ namespace carkaashiv_angular_API.Services
     }
     public async Task<PartResponseDto> CreatePartAsync(PartCreateDto dto)
     {
-        var part = new Part
+            var userIdClaim = _httpContextAccessor.HttpContext?
+               .User.FindFirst("userId")?.Value;
+            if (string.IsNullOrEmpty(userIdClaim))
+                throw new UnauthorizedAccessException("Invalid token");
+            var part = new Part
         {
-            PEmpId = dto.EmployeeId,
+            PEmpId = int.Parse(userIdClaim),
             PName = dto.Name,
             PDetail = dto.Description,
             PPrice = dto.Price,
             PStock = dto.Stock,
-            ImagePath = "Placeholder",
-           // CreatedAt = DateTime.UtcNow  // db fill this column
+            ImagePath = dto.ImageUrl
+            // CreatedAt = DateTime.UtcNow  // db fill this column
         };
         _context.tbl_part.Add(part);
         await _context.SaveChangesAsync();
@@ -49,6 +53,7 @@ namespace carkaashiv_angular_API.Services
             part.PDetail = dto.Description;
             part.PPrice = dto.Price;
             part.PStock = dto.stock;
+            part.ImagePath = dto.ImageUrl;
             part.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
             return MapToDto(part);
