@@ -1,0 +1,292 @@
+Folder PATH listing for volume 4tb Documents
+Volume serial number is 56DD-721B
+F:.
+|   .gitattributes
+|   .gitignore
+|   appsettings.Development.json
+|   appsettings.json
+|   appsettings.Production.json
+|   carkaashiv_angualr_API.http
+|   carkaashiv_angular_API.csproj
+|   carkaashiv_angular_API.csproj.user
+|   carkaashiv_angular_API.slnx
+|   Dockerfile
+|   global.json
+|   Program.cs
+|   README.md
+|   structure.txt
+|   WeatherForecast.cs
+|   
++---.github
+|   \---workflows
++---bin
+|   \---Debug
+|       \---net8.0
+|           |   appsettings.Development.json
+|           |   appsettings.json
+|           |   appsettings.Production.json
+|           |   Azure.Core.dll
+|           |   Azure.Identity.dll
+|           |   BCrypt.Net-Next.dll
+|           |   carkaashiv_angular_API.deps.json
+|           |   carkaashiv_angular_API.dll
+|           |   carkaashiv_angular_API.exe
+|           |   carkaashiv_angular_API.pdb
+|           |   carkaashiv_angular_API.runtimeconfig.json
+|           |   global.json
+|           |   Humanizer.dll
+|           |   Microsoft.AspNetCore.Authentication.JwtBearer.dll
+|           |   Microsoft.Bcl.AsyncInterfaces.dll
+|           |   Microsoft.CodeAnalysis.CSharp.dll
+|           |   Microsoft.CodeAnalysis.CSharp.Workspaces.dll
+|           |   Microsoft.CodeAnalysis.dll
+|           |   Microsoft.CodeAnalysis.Workspaces.dll
+|           |   Microsoft.Data.SqlClient.dll
+|           |   Microsoft.EntityFrameworkCore.Abstractions.dll
+|           |   Microsoft.EntityFrameworkCore.Design.dll
+|           |   Microsoft.EntityFrameworkCore.dll
+|           |   Microsoft.EntityFrameworkCore.Relational.dll
+|           |   Microsoft.EntityFrameworkCore.SqlServer.dll
+|           |   Microsoft.Extensions.DependencyModel.dll
+|           |   Microsoft.Identity.Client.dll
+|           |   Microsoft.Identity.Client.Extensions.Msal.dll
+|           |   Microsoft.IdentityModel.Abstractions.dll
+|           |   Microsoft.IdentityModel.JsonWebTokens.dll
+|           |   Microsoft.IdentityModel.Logging.dll
+|           |   Microsoft.IdentityModel.Protocols.dll
+|           |   Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+|           |   Microsoft.IdentityModel.Tokens.dll
+|           |   Microsoft.SqlServer.Server.dll
+|           |   Microsoft.Win32.SystemEvents.dll
+|           |   Mono.TextTemplating.dll
+|           |   Npgsql.dll
+|           |   Npgsql.EntityFrameworkCore.PostgreSQL.dll
+|           |   System.CodeDom.dll
+|           |   System.Composition.AttributedModel.dll
+|           |   System.Composition.Convention.dll
+|           |   System.Composition.Hosting.dll
+|           |   System.Composition.Runtime.dll
+|           |   System.Composition.TypedParts.dll
+|           |   System.Configuration.ConfigurationManager.dll
+|           |   System.Drawing.Common.dll
+|           |   System.IdentityModel.Tokens.Jwt.dll
+|           |   System.Memory.Data.dll
+|           |   System.Runtime.Caching.dll
+|           |   System.Security.Cryptography.ProtectedData.dll
+|           |   System.Security.Permissions.dll
+|           |   System.Windows.Extensions.dll
+|           |   
+|           +---cs
+|           |       Microsoft.CodeAnalysis.CSharp.resources.dll
+|           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+|           |       Microsoft.CodeAnalysis.resources.dll
+|           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
+|           |       
+|           +---de
+|           |       Microsoft.CodeAnalysis.CSharp.resources.dll
+|           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+|           |       Microsoft.CodeAnalysis.resources.dll
+|           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
+|           |       
+|           +---es
+|           |       Microsoft.CodeAnalysis.CSharp.resources.dll
+|           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+|           |       Microsoft.CodeAnalysis.resources.dll
+|           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
+|           |       
+|           +---fr
+|           |       Microsoft.CodeAnalysis.CSharp.resources.dll
+|           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+|           |       Microsoft.CodeAnalysis.resources.dll
+|           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
+|           |       
+|           +---it
+|           |       Microsoft.CodeAnalysis.CSharp.resources.dll
+|           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+|           |       Microsoft.CodeAnalysis.resources.dll
+|           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
+|           |       
+|           +---ja
+|           |       Microsoft.CodeAnalysis.CSharp.resources.dll
+|           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+|           |       Microsoft.CodeAnalysis.resources.dll
+|           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
+|           |       
+|           +---ko
+|           |       Microsoft.CodeAnalysis.CSharp.resources.dll
+|           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+|           |       Microsoft.CodeAnalysis.resources.dll
+|           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
+|           |       
+|           +---pl
+|           |       Microsoft.CodeAnalysis.CSharp.resources.dll
+|           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+|           |       Microsoft.CodeAnalysis.resources.dll
+|           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
+|           |       
+|           +---pt-BR
+|           |       Microsoft.CodeAnalysis.CSharp.resources.dll
+|           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+|           |       Microsoft.CodeAnalysis.resources.dll
+|           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
+|           |       
+|           +---ru
+|           |       Microsoft.CodeAnalysis.CSharp.resources.dll
+|           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+|           |       Microsoft.CodeAnalysis.resources.dll
+|           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
+|           |       
+|           +---runtimes
+|           |   +---browser
+|           |   |   \---lib
+|           |   |       \---net8.0
+|           |   +---unix
+|           |   |   \---lib
+|           |   |       \---net6.0
+|           |   |               Microsoft.Data.SqlClient.dll
+|           |   |               System.Drawing.Common.dll
+|           |   |               
+|           |   +---win
+|           |   |   \---lib
+|           |   |       \---net6.0
+|           |   |               Microsoft.Data.SqlClient.dll
+|           |   |               Microsoft.Win32.SystemEvents.dll
+|           |   |               System.Drawing.Common.dll
+|           |   |               System.Runtime.Caching.dll
+|           |   |               System.Security.Cryptography.ProtectedData.dll
+|           |   |               System.Windows.Extensions.dll
+|           |   |               
+|           |   +---win-arm
+|           |   |   \---native
+|           |   |           Microsoft.Data.SqlClient.SNI.dll
+|           |   |           
+|           |   +---win-arm64
+|           |   |   \---native
+|           |   |           Microsoft.Data.SqlClient.SNI.dll
+|           |   |           
+|           |   +---win-x64
+|           |   |   \---native
+|           |   |           Microsoft.Data.SqlClient.SNI.dll
+|           |   |           
+|           |   \---win-x86
+|           |       \---native
+|           |               Microsoft.Data.SqlClient.SNI.dll
+|           |               
+|           +---tr
+|           |       Microsoft.CodeAnalysis.CSharp.resources.dll
+|           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+|           |       Microsoft.CodeAnalysis.resources.dll
+|           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
+|           |       
+|           +---zh-Hans
+|           |       Microsoft.CodeAnalysis.CSharp.resources.dll
+|           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+|           |       Microsoft.CodeAnalysis.resources.dll
+|           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
+|           |       
+|           \---zh-Hant
+|                   Microsoft.CodeAnalysis.CSharp.resources.dll
+|                   Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+|                   Microsoft.CodeAnalysis.resources.dll
+|                   Microsoft.CodeAnalysis.Workspaces.resources.dll
+|                   
++---Controllers
+|       AuthController.cs
+|       EmployeesController.cs
+|       PartsController.cs
+|       
++---Data
+|       AppDbContext.cs
+|       
++---db
+|   \---migrations
+|       \---postgres
+|               002_tbl_emp_idt_timestamp_fix.sql
+|               V1__tbl_user_timestamp_fix.sql
+|               
++---DTOs
+|       EmployeeAdminUpdateDto.cs
+|       EmployeeResponseDto.cs
+|       EmployeeSelfUpdateDto.cs
+|       ErrorResponse.cs
+|       LoginResponseDto.cs
+|       PartCreateDto.cs
+|       PartResponseDto.cs
+|       PartUpdateDto.cs
+|       RegisterEmployeeDto.cs
+|       RegisterUserDto.cs
+|       
++---Interfaces
+|       IAuthService.cs
+|       
++---Middleware
+|       GlobalExceptionMiddleware.cs
+|       
++---Migrations
+|       20260220102909_InitialCreate_Porstgres.cs
+|       20260220102909_InitialCreate_Porstgres.Designer.cs
+|       AppDbContextModelSnapshot.cs
+|       
++---Models
+|   +---Auth
+|   |       AuthResult.cs
+|   |       LoginRequest.cs
+|   |       LoginResponse.cs
+|   |       
+|   +---Entities
+|   |       AppDbEntities.cs
+|   |       
+|   \---Shared
+|           ApiResponse.cs
+|           
++---obj
+|   |   carkaashiv_angular_API.csproj.EntityFrameworkCore.targets
+|   |   carkaashiv_angular_API.csproj.nuget.dgspec.json
+|   |   carkaashiv_angular_API.csproj.nuget.g.props
+|   |   carkaashiv_angular_API.csproj.nuget.g.targets
+|   |   project.assets.json
+|   |   project.nuget.cache
+|   |   
+|   \---Debug
+|       \---net8.0
+|           |   .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+|           |   ApiEndpoints.json
+|           |   apphost.exe
+|           |   carkaash.EA58691F.Up2Date
+|           |   carkaashiv_angular_API.AssemblyInfo.cs
+|           |   carkaashiv_angular_API.AssemblyInfoInputs.cache
+|           |   carkaashiv_angular_API.assets.cache
+|           |   carkaashiv_angular_API.csproj.AssemblyReference.cache
+|           |   carkaashiv_angular_API.csproj.BuildWithSkipAnalyzers
+|           |   carkaashiv_angular_API.csproj.CoreCompileInputs.cache
+|           |   carkaashiv_angular_API.csproj.FileListAbsolute.txt
+|           |   carkaashiv_angular_API.dll
+|           |   carkaashiv_angular_API.GeneratedMSBuildEditorConfig.editorconfig
+|           |   carkaashiv_angular_API.genruntimeconfig.cache
+|           |   carkaashiv_angular_API.GlobalUsings.g.cs
+|           |   carkaashiv_angular_API.MvcApplicationPartsAssemblyInfo.cache
+|           |   carkaashiv_angular_API.pdb
+|           |   carkaashiv_angular_API.sourcelink.json
+|           |   staticwebassets.build.json
+|           |   staticwebassets.references.upToDateCheck.txt
+|           |   staticwebassets.removed.txt
+|           |   
+|           +---ref
+|           |       carkaashiv_angular_API.dll
+|           |       
+|           +---refint
+|           |       carkaashiv_angular_API.dll
+|           |       
+|           \---staticwebassets
+|                   msbuild.build.carkaashiv_angular_API.props
+|                   msbuild.buildMultiTargeting.carkaashiv_angular_API.props
+|                   msbuild.buildTransitive.carkaashiv_angular_API.props
+|                   
++---Properties
+|       launchSettings.json
+|       
+\---Services
+        AuthService.cs
+        EmployeeService.cs
+        PartService.cs
+        

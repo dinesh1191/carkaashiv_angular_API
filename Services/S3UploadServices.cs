@@ -2,6 +2,9 @@
 {
     using Amazon.S3;
     using Amazon.S3.Model;
+    using Azure;
+    using carkaashiv_angular_API.DTOs;
+    using System.Net;
     using System.Text.Json;
 
     public class S3UploadServices
@@ -15,10 +18,12 @@
             _config = config;
         }
 
-        public string GeneratePresignedUrl(string fileName,string contentType)
+        public PresignedUrlResponse GeneratePresignedUrl(string fileName,string contentType)
         {
             var bucket = _config["S3:BucketName"];
-            var key = $"parts/{Guid.NewGuid()}_{fileName}";
+
+            var key = $"temp/{Guid.NewGuid()}_{fileName}";
+
             var request = new GetPreSignedUrlRequest
             {
                 BucketName = bucket,
@@ -29,12 +34,42 @@
             };
             var uploadUrl = _s3Client.GetPreSignedURL(request);
             var fileUrl = $"https://{bucket}.s3.ap-south-1.amazonaws.com/{key}";
-                        
-            return JsonSerializer.Serialize(new
+            return new PresignedUrlResponse
             {
-                uploadUrl,
-                fileUrl
-            });
+                UploadUrl = uploadUrl,
+                FileUrl = fileUrl,
+                Key = key
+            };
+        }
+        public async Task<bool> DeleteFileAsync(string key)
+        {
+            var bucket = _config["S3:BucketName"];
+            // Normalize the S3 key: decode URL encoding and remove any leading '/'
+            // so it matches the actual S3 object key format (e.g., "temp/file.png").
+            // Normalize key received from API route
+            key = WebUtility.UrlDecode(key);
+            key = key.TrimStart('/');           
+            
+            //If only filename is provided,assume it belongs to temp/
+            if (!key.Contains("/"))
+            {
+                key = $"temp/{key}";
+            }
+            
+            //Final security check: Only allow deletion inside temp/
+            if (!key.StartsWith("temp/")) //Restricting deletion to temp/ protects your data.
+            throw new InvalidOperationException("Only temp folder deletion allowed");
+            
+            
+            var request = new DeleteObjectRequest
+            { 
+                BucketName = bucket,        
+                Key = key
+            };
+            var response = await _s3Client.DeleteObjectAsync(request);
+            Console.WriteLine($"s3 delete status:{response.HttpStatusCode}");
+           
+            return true;
         }
     }
 }

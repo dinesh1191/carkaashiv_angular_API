@@ -29,21 +29,25 @@ namespace carkaashiv_angular_API.Controllers
 
         [HttpPost("presigned-url")]
         public IActionResult GeneratetUploadUrl([FromBody] UploadRequest request)
-        {
-            //if(string.IsNullOrWhiteSpace(request.FileName) || 
-            //    string.IsNullOrWhiteSpace(request.ContentType))
-            //{
-            //    return BadRequest("FileName and ContentType are required.");
-            //}
-
-            var result = _s3UploadService.GeneratePresignedUrl
-                (
-                request.FileName,
-                request.ContentType
-          
-                );
-
+        {      
+        var result = _s3UploadService.GeneratePresignedUrl(request.FileName, request.ContentType);
             return Ok(result);
+        }
+
+        [HttpDelete("{*key}")]
+        //{*key} allows the route to accept slashes inside the key
+        // Without *, ASP.NET would break the route
+        public async Task<IActionResult>DeleteFile(string key)
+        {
+            try
+            {
+                await _s3UploadService.DeleteFileAsync(key);
+                return Ok(new {message = "File deleted successfully"});
+            }
+            catch (Exception ex) { 
+            
+            return BadRequest(new { message = ex.Message });
+            }            
         }
     }
 }
