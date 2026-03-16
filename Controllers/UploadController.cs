@@ -49,5 +49,14 @@ namespace carkaashiv_angular_API.Controllers
             return BadRequest(new { message = ex.Message });
             }            
         }
+        //[HttpPost("confirm-image")]
+        //public async Task<IActionResult> ConfirmImage([FromBody] ConfirmImageRequestDto dto) 
+            
+        //{
+        //    var finalUrl = await _s3UploadService.MoveTempToPartsAsync(dto.Key);
+        //    return Ok(new { imageUrl = finalUrl });
+
+        //}
+
     }
 }

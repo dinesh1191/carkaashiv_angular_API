@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using carkaashiv_angular_API.Interfaces;
 
 
+
 namespace carkaashiv_angular_API.Services
 {
 
@@ -12,10 +13,12 @@ namespace carkaashiv_angular_API.Services
     {
         private readonly AppDbContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
-    public PartService(AppDbContext context, IHttpContextAccessor accessor)
+        private readonly S3UploadServices _s3UploadServices;
+    public PartService(AppDbContext context, IHttpContextAccessor accessor, S3UploadServices s3UploadServices)
     {
         _context = context;
         _httpContextAccessor = accessor;
+        _s3UploadServices = s3UploadServices;
 
     }
     public async Task<PartResponseDto> CreatePartAsync(PartCreateDto dto)
@@ -31,7 +34,7 @@ namespace carkaashiv_angular_API.Services
             PDetail = dto.Description,
             PPrice = dto.Price,
             PStock = dto.Stock,
-            ImagePath = dto.ImageUrl
+            ImagePath = await _s3UploadServices.FinalizeImageAsync(dto.ImageKey,null)
             // CreatedAt = DateTime.UtcNow  // db fill this column
         };
         _context.tbl_part.Add(part);
@@ -39,12 +42,14 @@ namespace carkaashiv_angular_API.Services
         return MapToDto(part);
     }
 
-        public async Task<PartResponseDto?> UpdatePartAsync(int id, PartUpdateDto dto)
+        public async Task<PartResponseDto?> UpdatePartAsync(int id,PartUpdateDto dto)
         {
             var part = await _context.tbl_part.FindAsync(id);
             if (part == null) return null;
+
             var userIdClaim = _httpContextAccessor.HttpContext?
                 .User.FindFirst("userId")?.Value;
+
             if (string.IsNullOrEmpty(userIdClaim))
                 throw new UnauthorizedAccessException("Invalid token");
             
@@ -53,7 +58,10 @@ namespace carkaashiv_angular_API.Services
             part.PDetail = dto.Description;
             part.PPrice = dto.Price;
             part.PStock = dto.stock;
-            part.ImagePath = dto.ImageUrl;
+            if (!string.IsNullOrEmpty(dto.ImageKey))//no S3 call Update Without Image Change
+            {
+                part.ImagePath = await _s3UploadServices.FinalizeImageAsync(dto.ImageKey, part.ImagePath);
+            }            
             part.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
             return MapToDto(part);
