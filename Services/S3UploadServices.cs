@@ -22,7 +22,7 @@
         {
             var bucket = _config["S3:BucketName"];
 
-            var key = $"temp/{Guid.NewGuid()}_{fileName}";
+            var key = $"temp/{Guid.NewGuid()}_{fileName.Replace("","_") }";//normalize file names eg:back light.png → back_light.png
 
             var request = new GetPreSignedUrlRequest
             {
@@ -75,20 +75,20 @@
         public async Task<string> FinalizeImageAsync(string? tempKey, string? existingImageUrl)
         {
             var bucket = _config["S3:BucketName"];
-            
+            // Case 1: No new image → keep existing
             if (string.IsNullOrEmpty(tempKey))
                 return existingImageUrl ?? "";
 
             tempKey = WebUtility.UrlDecode(tempKey);
             tempKey = tempKey.TrimStart('/');
 
-            //If image already finalized (editing without change)
+            // Case 2: Already in parts/ → no change
             if (!tempKey.StartsWith("temp/"))
                 return existingImageUrl ?? "";
 
-            //Build destination key
+            // Build destination key
             var partsKey = tempKey.Replace("temp/", "parts/");
-            //copy image
+            // Copy temp → parts
             await _s3Client.CopyObjectAsync(new CopyObjectRequest
             {
                 SourceBucket = bucket,
@@ -97,7 +97,7 @@
                 DestinationKey = partsKey
             });
 
-            // Delete temp image
+            // Delete temp/ image
             await _s3Client.DeleteObjectAsync(new DeleteObjectRequest
             {
                 BucketName = bucket,
@@ -108,7 +108,10 @@
             if (!string.IsNullOrEmpty(existingImageUrl))
             {
                 var oldKey = ExtractKeyFromUrl(existingImageUrl);
-                if (oldKey.StartsWith("Parts/"))
+               
+                oldKey = WebUtility.UrlDecode(oldKey); //decodes url properly a
+
+                if (oldKey.StartsWith("parts/"))
                 {
                     await _s3Client.DeleteObjectAsync(new DeleteObjectRequest
                     {
