@@ -70,41 +70,7 @@
             Console.WriteLine($"s3 delete status:{response.HttpStatusCode}");
            
             return true;
-        }
-        public async Task<string>MoveTempToPartsAsync(string tempkey)
-        {
-            var bucket = _config["S3:BucketName"];
-            //Normalize key
-            tempkey = WebUtility.UrlDecode(tempkey);
-            tempkey = tempkey.TrimStart('/');
-
-            if (!tempkey.StartsWith("temp/"))
-            {
-                throw new InvalidOperationException("Only temp images can be moved");
-            }
-            //Build destionation key
-            var partsKey = tempkey.Replace("temp/", "parts/");
-
-            // 1)copy object
-            var copyRequest = new CopyObjectRequest
-            {
-                SourceBucket = bucket,
-                SourceKey = tempkey,
-                DestinationBucket = bucket,
-                DestinationKey = partsKey
-
-            };
-            await _s3Client.CopyObjectAsync(copyRequest);
-
-            //2) Delete old temp object
-            await _s3Client.DeleteObjectAsync(new DeleteObjectRequest
-            {
-                BucketName = bucket,
-                Key = tempkey 
-            });
-            //Return final URL
-            return $"https://{bucket}.s3.ap-south-1.amazonaws.com/{partsKey}";
-        }
+        }        
 
         public async Task<string> FinalizeImageAsync(string? tempKey, string? existingImageUrl)
         {
