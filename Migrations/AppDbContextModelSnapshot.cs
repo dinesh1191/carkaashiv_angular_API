@@ -266,11 +266,6 @@ namespace carkaashiv_angular_API.Migrations
                 });
 
 
-
-
-
-#pragma warning restore 612, 618
-
             modelBuilder.Entity<Part>(entity =>
             {
                 entity.ToTable("tbl_part");
@@ -287,6 +282,11 @@ namespace carkaashiv_angular_API.Migrations
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
                 entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             });
+
+
+#pragma warning restore 612, 618
+
+
         }
     }
 }
