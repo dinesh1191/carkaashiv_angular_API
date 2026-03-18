@@ -21,7 +21,7 @@ namespace carkaashiv_angular_API.DTOs
         public int Stock {  get; set; }
         
         [Required]
-        public string? ImageKey { get; set; } = string.Empty;
+        public string? ImageKey { get; set; } 
 
 
     }
