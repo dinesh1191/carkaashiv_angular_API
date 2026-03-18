@@ -263,28 +263,30 @@ namespace carkaashiv_angular_API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("tbl_user");
-                }
+                });
 
 
-                modelBuilder.Entity<Part>(entity =>
-                {
-                    entity.ToTable("tbl_part");
 
-                    entity.Property(e => e.PartId).HasColumnName("part_id");
-                    entity.Property(e => e.PEmpId).HasColumnName("emp_id");
 
-                    entity.Property(e => e.PName).HasColumnName("part_name");
-                    entity.Property(e => e.PDetail).HasColumnName("part_detail");
-                    entity.Property(e => e.PPrice).HasColumnName("part_price");
-                    entity.Property(e => e.PStock).HasColumnName("part_stock");
-                    entity.Property(e => e.ImagePath).HasColumnName("part_image");
-
-                    entity.Property(e => e.CreatedAt).HasColumnName("created_at");
-                    entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
-                })
-                );
 
 #pragma warning restore 612, 618
+
+            modelBuilder.Entity<Part>(entity =>
+            {
+                entity.ToTable("tbl_part");
+
+                entity.Property(e => e.PartId).HasColumnName("part_id");
+                entity.Property(e => e.PEmpId).HasColumnName("emp_id");
+
+                entity.Property(e => e.PName).HasColumnName("part_name");
+                entity.Property(e => e.PDetail).HasColumnName("part_detail");
+                entity.Property(e => e.PPrice).HasColumnName("part_price");
+                entity.Property(e => e.PStock).HasColumnName("part_stock");
+                entity.Property(e => e.ImagePath).HasColumnName("part_image");
+
+                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            });
         }
     }
 }
