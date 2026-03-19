@@ -3,6 +3,7 @@ using carkaashiv_angular_API.Models;
 using carkaashiv_angular_API.DTOs;
 using Microsoft.EntityFrameworkCore;
 using carkaashiv_angular_API.Interfaces;
+using carkaashiv_angular_API.Models.Shared;
 
 
 
@@ -21,26 +22,34 @@ namespace carkaashiv_angular_API.Services
         _s3UploadServices = s3UploadServices;
 
     }
-    public async Task<PartResponseDto> CreatePartAsync(PartCreateDto dto)
-    {
+        public async Task<PartResponseDto> CreatePartAsync(PartCreateDto dto)
+        {
             var userIdClaim = _httpContextAccessor.HttpContext?
                .User.FindFirst("userId")?.Value;
             if (string.IsNullOrEmpty(userIdClaim))
                 throw new UnauthorizedAccessException("Invalid token");
+
             var part = new Part
-        {
-            PEmpId = int.Parse(userIdClaim),
-            PName = dto.Name,
-            PDetail = dto.Description,
-            PPrice = dto.Price,
-            PStock = dto.Stock,
-            ImagePath = await _s3UploadServices.FinalizeImageAsync(dto.ImageKey,null)
-            // CreatedAt = DateTime.UtcNow  // db fill this column
-        };
-        _context.tbl_part.Add(part);
-        await _context.SaveChangesAsync();
-        return MapToDto(part);
-    }
+            {
+                PEmpId = int.Parse(userIdClaim),
+                PName = dto.Name,
+                PDetail = dto.Description,
+                PPrice = dto.Price,
+                PStock = dto.Stock,
+                ImagePath = await _s3UploadServices.FinalizeImageAsync(dto.ImageKey, null)
+                // CreatedAt = DateTime.UtcNow  // db fill this column
+
+            };
+            if (string.IsNullOrEmpty(part.ImagePath))
+            {
+                throw new Exception("ImagePath is null or empty");
+            }
+            Console.WriteLine("ImageKey: " + dto.ImageKey);
+            Console.WriteLine("ImagePath: " + part.ImagePath);
+            _context.tbl_part.Add(part);
+            await _context.SaveChangesAsync();
+            return MapToDto(part);
+        }
 
         public async Task<PartResponseDto?> UpdatePartAsync(int id,PartUpdateDto dto)
         {
