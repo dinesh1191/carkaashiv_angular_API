@@ -22,7 +22,7 @@
         {
             var bucket = _config["S3:BucketName"];
 
-            var key = $"temp/{Guid.NewGuid()}_{fileName.Replace("","_") }";//normalize file names eg:back light.png → back_light.png
+            var key = $"temp/{Guid.NewGuid()}_{fileName?.Replace(" ","_") }";//normalize file names eg:back light.png → back_light.png
 
             var request = new GetPreSignedUrlRequest
             {
