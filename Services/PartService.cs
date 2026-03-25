@@ -94,7 +94,13 @@ namespace carkaashiv_angular_API.Services
         public async Task<bool> DeletePartAsync(int id)
         {
             var part = await _context.tbl_part.FindAsync(id);
+
             if (part == null) return false;
+            
+            if (!string.IsNullOrEmpty(part.Imagekey))
+            {
+                await _s3UploadServices.DeleteFileAsync(part.Imagekey);
+            }
             _context.tbl_part.Remove(part);
             await _context.SaveChangesAsync();
             return true;

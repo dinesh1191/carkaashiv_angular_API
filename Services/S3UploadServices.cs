@@ -43,33 +43,43 @@
         }
         public async Task<bool> DeleteFileAsync(string key)
         {
+            if (string.IsNullOrWhiteSpace(key))
+                return false;
             var bucket = _config["S3:BucketName"];
             // Normalize the S3 key: decode URL encoding and remove any leading '/'
-            // so it matches the actual S3 object key format (e.g., "temp/file.png").
+                    
             // Normalize key received from API route
             key = WebUtility.UrlDecode(key);
-            key = key.TrimStart('/');           
-            
-            //If only filename is provided,assume it belongs to temp/
-            if (!key.Contains("/"))
+            key = key.TrimStart('/');
+
+            //If full URL is passed → extract key
+            if (key.StartsWith("http"))
             {
-                key = $"temp/{key}";
+                key = ExtractKeyFromUrl(key);
             }
-            
-            //Final security check: Only allow deletion inside temp/
-            if (!key.StartsWith("temp/")) //Restricting deletion to temp/ protects your data.
-            throw new InvalidOperationException("Only temp folder deletion allowed");
-            
-            
-            var request = new DeleteObjectRequest
-            { 
-                BucketName = bucket,        
-                Key = key
-            };
-            var response = await _s3Client.DeleteObjectAsync(request);
-            Console.WriteLine($"s3 delete status:{response.HttpStatusCode}");
-           
-            return true;
+
+            //Security check: Only allow deletion known folders
+            //If key is NOT temp AND NOT parts → block it
+            if (!key.StartsWith("temp/") && !key.StartsWith("parts/")) // Allow deletion only from controlled folders (temp/ and parts/)
+            {
+              throw new InvalidOperationException("Invalid S3 key. Deletion not allowed.");
+            }
+            try
+            {
+                var request = new DeleteObjectRequest
+                {
+                    BucketName = bucket,
+                    Key = key
+                };
+                var response = await _s3Client.DeleteObjectAsync(request);
+                Console.WriteLine($"S3 delete success: {key} | Status : {response.HttpStatusCode}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"S3 delete failed: {key} | Error:{ex.Message}");
+                return false;
+            }          
         }        
 
         public async Task<(string finalUrl, string finalKey)> FinalizeImageAsync(string? tempKey, string? existingImageUrl)
