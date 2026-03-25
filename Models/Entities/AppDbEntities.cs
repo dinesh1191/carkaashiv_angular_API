@@ -33,15 +33,20 @@ namespace carkaashiv_angular_API.Models
         [Column("part_stock")]
         public int? PStock { get; set; }
 
+        [Column("part-image_key")]
+        public string? Imagekey { get; set; } 
+
         [Required, StringLength(500)]
         [Column("part_image")]
         public string? ImagePath { get; set; }
                
         [Column("created_at")]
-        public DateTime  CreatedAt { get; set; } 
+        public DateTime  CreatedAt { get; set; }
 
         [Column("updated_at")]
-        public DateTime? UpdatedAt { get; set; } 
+        public DateTime? UpdatedAt { get; set; }
+
+
     }
 
     public class User

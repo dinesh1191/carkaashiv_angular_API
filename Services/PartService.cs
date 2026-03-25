@@ -28,7 +28,8 @@ namespace carkaashiv_angular_API.Services
                .User.FindFirst("userId")?.Value;
             if (string.IsNullOrEmpty(userIdClaim))
                 throw new UnauthorizedAccessException("Invalid token");
-
+            //get url and key form service
+            var result = await _s3UploadServices.FinalizeImageAsync(dto.ImageKey, null);
             var part = new Part
             {
                 PEmpId = int.Parse(userIdClaim),
@@ -36,10 +37,9 @@ namespace carkaashiv_angular_API.Services
                 PDetail = dto.Description,
                 PPrice = dto.Price,
                 PStock = dto.Stock,
-                ImagePath = await _s3UploadServices.FinalizeImageAsync(dto.ImageKey, null)
-                // CreatedAt = DateTime.UtcNow  // db fill this column
-
-            };
+                Imagekey = result.finalKey,
+                ImagePath = result.finalUrl,               
+             };
             if (string.IsNullOrEmpty(part.ImagePath))
             {
                 throw new Exception("ImagePath is null or empty");
@@ -61,16 +61,17 @@ namespace carkaashiv_angular_API.Services
 
             if (string.IsNullOrEmpty(userIdClaim))
                 throw new UnauthorizedAccessException("Invalid token");
-            
+
+            //get url and key form service
+            var result = await _s3UploadServices.FinalizeImageAsync(dto.ImageKey, part.ImagePath);
+
             part.PEmpId = int.Parse(userIdClaim);
             part.PName = dto.Name;
             part.PDetail = dto.Description;
             part.PPrice = dto.Price;
             part.PStock = dto.stock;
-            if (!string.IsNullOrEmpty(dto.ImageKey))//no S3 call Update Without Image Change
-            {
-                part.ImagePath = await _s3UploadServices.FinalizeImageAsync(dto.ImageKey, part.ImagePath);
-            }            
+            part.Imagekey = result.finalKey;
+            part.ImagePath = result.finalUrl;            
             part.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
             return MapToDto(part);
@@ -108,7 +109,8 @@ namespace carkaashiv_angular_API.Services
                 Description = p.PDetail ?? "",
                 Price = p.PPrice ?? 0,
                 stock = p.PStock ?? 0,
-                ImageUrl = p.ImagePath ?? ""
+                ImageUrl = p.ImagePath ?? "",
+                ImageKey = p.Imagekey ?? ""
             };
         }  
      }

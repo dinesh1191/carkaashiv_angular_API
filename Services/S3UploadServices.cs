@@ -72,46 +72,58 @@
             return true;
         }        
 
-        public async Task<string> FinalizeImageAsync(string? tempKey, string? existingImageUrl)
+        public async Task<(string finalUrl, string finalKey)> FinalizeImageAsync(string? tempKey, string? existingImageUrl)
         {
             var bucket = _config["S3:BucketName"];
-            // Case 1: No new image → keep existing
-            if (string.IsNullOrEmpty(tempKey))
-                return existingImageUrl ?? "";
 
+            // Case 1: No new image → keep existing image
+
+            if (string.IsNullOrEmpty(tempKey))
+                return 
+                    (existingImageUrl ?? "",
+                    ExtractKeyFromUrl(existingImageUrl ?? "")
+                    );
+
+          // Normalize incoming key (decode URL + remove Leading '/')
             tempKey = WebUtility.UrlDecode(tempKey);
             tempKey = tempKey.TrimStart('/');
 
-            // Case 2: Already in parts/ → no change
-            if (!tempKey.StartsWith("temp/"))
-                return existingImageUrl ?? "";
 
-            // Build destination key
-            var partsKey = tempKey.Replace("temp/", "parts/");
-            // Copy temp → parts
+            // Case 2: Already a final image (parts/) -> no procesing needed
+
+            if (!tempKey.StartsWith("temp/"))
+            {
+                return (
+                    existingImageUrl ?? "",
+                    tempKey
+                    );
+            }
+            //Step 1:Build final key (move from temp -> parts)
+            var finalKey = tempKey.Replace("temp/", "parts/");
+            var finalUrl = $"https://{bucket}.s3.ap-south-1.amazonaws.com/{finalKey}";
+
+            //Step 2: Copy image form temp/ -> parts/
             await _s3Client.CopyObjectAsync(new CopyObjectRequest
             {
                 SourceBucket = bucket,
                 SourceKey = tempKey,
                 DestinationBucket = bucket,
-                DestinationKey = partsKey
+                DestinationKey = finalKey
             });
-
-            // Delete temp/ image
+            //Step 3: Delete temp image (cleanup)
             await _s3Client.DeleteObjectAsync(new DeleteObjectRequest
             {
                 BucketName = bucket,
                 Key = tempKey
-
             });
-            // Delete previous parts image if exists
+            //Step 4: Delete OLD image from parts/ (only if different from new one)
             if (!string.IsNullOrEmpty(existingImageUrl))
             {
                 var oldKey = ExtractKeyFromUrl(existingImageUrl);
-               
-                oldKey = WebUtility.UrlDecode(oldKey); //decodes url properly a
+                oldKey = WebUtility.UrlDecode(oldKey);
 
-                if (oldKey.StartsWith("parts/"))
+                //Important : compare with finalKey(not tempKey)
+                if (oldKey.StartsWith("parts/") && oldKey != finalKey)
                 {
                     await _s3Client.DeleteObjectAsync(new DeleteObjectRequest
                     {
@@ -120,8 +132,9 @@
                     });
                 }
             }
-
-            return $"https://{bucket}.s3.ap-south-1.amazonaws.com/{partsKey}";
+      
+            // Final result → return correct order (URL first, then key)
+            return (finalUrl,finalKey);
         }
 
         private string ExtractKeyFromUrl(string url)
