@@ -42,6 +42,7 @@ namespace carkaashiv_angular_API.Data
                     .Property(p => p.CreatedAt)
                      .HasColumnType("timestamp with time zone")
                       .HasDefaultValueSql("NOW()");
+            modelBuilder.Entity<Cart>().Property(c => c.AddedDate).HasDefaultValueSql("Now()");
         }
     }
 

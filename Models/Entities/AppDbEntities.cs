@@ -130,8 +130,11 @@ namespace carkaashiv_angular_API.Models
 
         [Column("added_date")]
         public DateTime? AddedDate { get; set; }
-
-    }
+        public DateTime? UpdatedDate { get; set; }
+        public User? User { get; set; } //help Entity Framework understand relationships between tables.
+        
+        public Part? Part { get; set; }    
+      }
 
 
 

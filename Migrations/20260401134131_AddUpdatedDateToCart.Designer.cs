@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using carkaashiv_angular_API.Data;
@@ -11,9 +12,11 @@ using carkaashiv_angular_API.Data;
 namespace carkaashiv_angular_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260401134131_AddUpdatedDateToCart")]
+    partial class AddUpdatedDateToCart
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,10 +35,8 @@ namespace carkaashiv_angular_API.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CartId"));
 
                     b.Property<DateTime?>("AddedDate")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("added_date")
-                        .HasDefaultValueSql("Now()");
+                        .HasColumnName("added_date");
 
                     b.Property<int>("PartID")
                         .HasColumnType("integer")
