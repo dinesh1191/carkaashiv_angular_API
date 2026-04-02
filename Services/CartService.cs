@@ -66,5 +66,29 @@ namespace carkaashiv_angular_API.Services
                        ImageUrl = part.ImagePath
                    }).ToListAsync();
         }
+        public async Task<string> UpdateCartQuantityAsync(int userId ,UpdateCartQuantityRequestDto request)
+        {
+            var item = await _context.tbl_cart.FirstOrDefaultAsync(
+                c => c.UId == userId && 
+                     c.PartID == request.PartId
+                );
+            if(item == null) throw new Exception("Cart item not found");
+
+            item.Quantity = request.Quantity;
+            item.UpdatedDate = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return "Cart quantity update successfully";
+        }
+       
+       public async Task<string> RemoveCartItemAsync(int userId,int partId )
+        {
+            var item = await _context.tbl_cart.FirstOrDefaultAsync(
+                c => c.UId == userId &&
+                    c.PartID == partId);
+            if (item == null) throw new Exception("Cart item not found");
+            _context.tbl_cart.Remove(item);
+            await _context.SaveChangesAsync();
+            return "Item removed from cart sucessfully";
+        }
     }
 }

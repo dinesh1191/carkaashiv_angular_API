@@ -49,12 +49,26 @@ namespace carkaashiv_angular_API.Controllers
               message,items));             
 
         }
-
+        [Authorize]
+        [HttpPut("update-quantity")]
+        public async Task<IActionResult>updateQuanity(UpdateCartQuantityRequestDto request)
+        {
+            var userId = GetUserIdFromToken(User);
+            var message = await _cartService.UpdateCartQuantityAsync(userId, request);
+            return Ok(ApiResponse<string>.Ok(message));
+        }
+        [Authorize]
+        [HttpDelete("remove/{partId}")]
+        public async Task<IActionResult> RemoveItem(int partId)
+        {
+            var userId = GetUserIdFromToken(User);
+            var message = await _cartService.RemoveCartItemAsync(userId, partId);
+            return Ok(ApiResponse<string>.Ok(message));
+        }     
+        
         [NonAction] //Do not treat this as an API action
         public int GetUserIdFromToken(ClaimsPrincipal user)
-
         {
-
             var userIdClaim = user.FindFirst("userId")?.Value;
             Console.WriteLine("getuser id form claim" + userIdClaim);
 
@@ -62,8 +76,8 @@ namespace carkaashiv_angular_API.Controllers
                 throw new UnauthorizedAccessException("Invalid token: userId missing");
 
             return int.Parse(userIdClaim);
-
         }
+       
     } 
 
 }
