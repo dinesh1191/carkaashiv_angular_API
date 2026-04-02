@@ -1,6 +1,7 @@
 ﻿using carkaashiv_angular_API.DTOs;
 using carkaashiv_angular_API.Interfaces;
 using carkaashiv_angular_API.Models;
+using carkaashiv_angular_API.Models.Shared;
 using carkaashiv_angular_API.Services;
 using Microsoft.AspNetCore.Authorization;
 
@@ -36,14 +37,26 @@ namespace carkaashiv_angular_API.Controllers
             });
             }
 
+      
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetCart()
+        {
+            var userId = GetUserIdFromToken(User);
+            var items = await _cartService.GetCartItemsAsync(userId);
+            var message = items.Any() ? "Cart fetched Succesfully" : "Cart is empty";
+            return Ok(ApiResponse<List<CartItemResponseDto>>.Ok(
+              message,items));             
+
+        }
+
         [NonAction] //Do not treat this as an API action
-       public int GetUserIdFromToken(ClaimsPrincipal user)
+        public int GetUserIdFromToken(ClaimsPrincipal user)
 
         {
-           
 
             var userIdClaim = user.FindFirst("userId")?.Value;
-            Console.WriteLine("getuser id form claim"+userIdClaim);
+            Console.WriteLine("getuser id form claim" + userIdClaim);
 
             if (string.IsNullOrEmpty(userIdClaim))
                 throw new UnauthorizedAccessException("Invalid token: userId missing");
@@ -51,8 +64,6 @@ namespace carkaashiv_angular_API.Controllers
             return int.Parse(userIdClaim);
 
         }
-
-
-     } 
+    } 
 
 }

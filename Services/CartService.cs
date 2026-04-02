@@ -49,5 +49,22 @@ namespace carkaashiv_angular_API.Services
             }           
          
         }
+        public async Task<List<CartItemResponseDto>> GetCartItemsAsync(int userId)
+        {
+            return await _context.tbl_cart.Where(c => c.UId == userId).
+                    Join(_context.tbl_part,
+                    cart => cart.PartID,
+                    part => part.PartId,
+                   (cart, part) => new CartItemResponseDto
+                   {
+                       CartId = cart.CartId,
+                       PartId = cart.PartID,
+                       PartName = part.PName,
+                       Price = part.PPrice ?? 0,
+                       Quantity = cart.Quantity,
+                       SubTotal = (part.PPrice ?? 0) * cart.Quantity,
+                       ImageUrl = part.ImagePath
+                   }).ToListAsync();
+        }
     }
 }

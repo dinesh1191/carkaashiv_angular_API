@@ -17,7 +17,7 @@ namespace carkaashiv_angular_API.Models
 
         [MinLength(3, ErrorMessage = "Name must 3 characters minimum,maximum 25 characters")]
         [Column("part_name")]
-        public string? PName { get; set; }
+        public string PName { get; set; } = string.Empty;
 
 
         [Required, StringLength(100)]
