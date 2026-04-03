@@ -12,5 +12,7 @@ namespace carkaashiv_angular_API.Interfaces
         Task<string> UpdateCartQuantityAsync(int userId, UpdateCartQuantityRequestDto request);
         // For Delete
         Task<string> RemoveCartItemAsync(int userId, int partId);
+        //For cartItemCount
+        Task<int> GetCartCountAsync(int userId);
     }
 }

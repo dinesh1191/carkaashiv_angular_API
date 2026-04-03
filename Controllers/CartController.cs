@@ -14,7 +14,7 @@ namespace carkaashiv_angular_API.Controllers
 
     [ApiController]
     [Route("api/[controller]")]
-    public class CartController : ControllerBase
+    public class CartController : BaseController
     {
 
         private readonly ICartService _cartService;
@@ -26,58 +26,47 @@ namespace carkaashiv_angular_API.Controllers
             [Authorize]
             [HttpPost("add")]
             public async Task<IActionResult> AddToCart(AddToCartRequestDto request)
-            {
-                var userId = GetUserIdFromToken(User);
-            Console.WriteLine("check userId: "+userId, GetUserIdFromToken(User));
-
-              var message =  await _cartService.AddToCartAsync(userId, request);
-            return Ok(new
-            {
-              message
-            });
-            }
+            {          
+            var message =  await _cartService.AddToCartAsync(CurrentUserId, request);
+            return Ok(ApiResponse<string>.Ok(message));
+        }
 
       
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetCart()
         {
-            var userId = GetUserIdFromToken(User);
-            var items = await _cartService.GetCartItemsAsync(userId);
+            var items = await _cartService.GetCartItemsAsync(CurrentUserId);
             var message = items.Any() ? "Cart fetched Succesfully" : "Cart is empty";
-            return Ok(ApiResponse<List<CartItemResponseDto>>.Ok(
-              message,items));             
+            return Ok(ApiResponse<List<CartItemResponseDto>>.Ok( message, items) );             
 
         }
+
         [Authorize]
         [HttpPut("update-quantity")]
         public async Task<IActionResult>updateQuanity(UpdateCartQuantityRequestDto request)
         {
-            var userId = GetUserIdFromToken(User);
-            var message = await _cartService.UpdateCartQuantityAsync(userId, request);
+            var message = await _cartService.UpdateCartQuantityAsync(CurrentUserId, request);
             return Ok(ApiResponse<string>.Ok(message));
         }
+
+
         [Authorize]
         [HttpDelete("remove/{partId}")]
         public async Task<IActionResult> RemoveItem(int partId)
         {
-            var userId = GetUserIdFromToken(User);
-            var message = await _cartService.RemoveCartItemAsync(userId, partId);
+            var message = await _cartService.RemoveCartItemAsync(CurrentUserId, partId);
             return Ok(ApiResponse<string>.Ok(message));
-        }     
-        
-        [NonAction] //Do not treat this as an API action
-        public int GetUserIdFromToken(ClaimsPrincipal user)
-        {
-            var userIdClaim = user.FindFirst("userId")?.Value;
-            Console.WriteLine("getuser id form claim" + userIdClaim);
-
-            if (string.IsNullOrEmpty(userIdClaim))
-                throw new UnauthorizedAccessException("Invalid token: userId missing");
-
-            return int.Parse(userIdClaim);
         }
-       
+
+        [Authorize]
+        [HttpGet("count")]
+        public async Task<IActionResult> GetCartCount()
+        {
+            var count = await _cartService.GetCartCountAsync(CurrentUserId);
+            return Ok(ApiResponse<int>.Ok("Cart count fetched successfully",count));
+
+        }
     } 
 
 }

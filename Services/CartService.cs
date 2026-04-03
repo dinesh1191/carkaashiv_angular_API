@@ -90,5 +90,10 @@ namespace carkaashiv_angular_API.Services
             await _context.SaveChangesAsync();
             return "Item removed from cart sucessfully";
         }
+        public async Task<int> GetCartCountAsync(int userId)
+        {
+            return await _context.tbl_cart
+               .Where(c => c.UId == userId).SumAsync(c => c.Quantity);// SumAsync gives total quantity count, which is ideal for badge.
+        }
     }
 }
