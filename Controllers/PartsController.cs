@@ -78,7 +78,7 @@ namespace carkaashiv_angular_API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         //Controller route + Action route = final endpoint
-        [Authorize(Roles = "admin,employee,customer")]
+        [Authorize(Roles = "admin,employee")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPartById(int id)
         {
@@ -105,9 +105,9 @@ namespace carkaashiv_angular_API.Controllers
         /// <returns></returns>
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        //Put api/parts/{id} for updating existing part on db
-        [Authorize(Roles ="admin,employee")]
+        //Put api/parts/{id} for updating existing part on db        
         [HttpPut("{id}")]
+        [Authorize(Roles = "admin,employee")]
         public async Task<IActionResult> UpdatePart(int id, PartUpdateDto dto)
         {
             var part = await _partService.UpdatePartAsync(id, dto);

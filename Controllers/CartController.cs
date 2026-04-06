@@ -11,7 +11,7 @@ using System.Security.Claims;
 
 namespace carkaashiv_angular_API.Controllers
 {
-
+    [Authorize(Roles = "customer")]
     [ApiController]
     [Route("api/[controller]")]
     public class CartController : BaseController
@@ -23,7 +23,6 @@ namespace carkaashiv_angular_API.Controllers
             _cartService = cartService;
         }
 
-            [Authorize]
             [HttpPost("add")]
             public async Task<IActionResult> AddToCart(AddToCartRequestDto request)
             {          
@@ -32,7 +31,7 @@ namespace carkaashiv_angular_API.Controllers
         }
 
       
-        [Authorize]
+        
         [HttpGet]
         public async Task<IActionResult> GetCart()
         {
@@ -42,7 +41,7 @@ namespace carkaashiv_angular_API.Controllers
 
         }
 
-        [Authorize]
+       
         [HttpPut("update-quantity")]
         public async Task<IActionResult>updateQuanity(UpdateCartQuantityRequestDto request)
         {
@@ -51,7 +50,7 @@ namespace carkaashiv_angular_API.Controllers
         }
 
 
-        [Authorize]
+       
         [HttpDelete("remove/{partId}")]
         public async Task<IActionResult> RemoveItem(int partId)
         {
@@ -59,7 +58,7 @@ namespace carkaashiv_angular_API.Controllers
             return Ok(ApiResponse<string>.Ok(message));
         }
 
-        [Authorize]
+        
         [HttpGet("count")]
         public async Task<IActionResult> GetCartCount()
         {
