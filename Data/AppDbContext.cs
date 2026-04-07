@@ -25,28 +25,43 @@ namespace carkaashiv_angular_API.Data
 
             modelBuilder.Entity<OrderItems>(entity =>
             {
-                entity.Property(e => e.UnitPrice).HasPrecision(18, 2);
-                entity.Property(e => e.totalPrice).HasPrecision(18, 2);
+                entity.Property(e => e.UnitPrice)
+                .HasPrecision(18, 2);
+                entity.Property(e => e.totalPrice)
+                .HasPrecision(18, 2);
             });
 
             modelBuilder.Entity<Orders>(entity =>
             {
-                entity.Property(e => e.TotalAmount).HasPrecision(18, 2);
+                entity.Property(e => e.TotalAmount)
+                .HasPrecision(18, 2);
             });
 
             modelBuilder.Entity<Part>(entity =>
             {
-                entity.Property(e => e.PPrice).HasPrecision(18, 2);
+                entity.Property(e => e.PPrice)
+                .HasPrecision(18, 2);
             });
             modelBuilder.Entity<Part>()
-                    .Property(p => p.CreatedAt)
-                     .HasColumnType("timestamp with time zone")
-                      .HasDefaultValueSql("NOW()");
+                .Property(p => p.CreatedAt)
+                .HasColumnType("timestamp with time zone")
+                .HasDefaultValueSql("NOW()");
 
             modelBuilder.Entity<Cart>()
                 .Property(c => c.AddedDate)
                 .HasDefaultValueSql("Now()"
                 );
+
+            modelBuilder.Entity<Cart>()
+            .HasOne(c => c.User)
+            .WithMany()
+            .HasForeignKey(c => c.UId)
+            .HasPrincipalKey(u => u.Id);
+            
+            modelBuilder.Entity<Cart>()
+            .HasOne(c => c.Part)
+            .WithMany()
+            .HasForeignKey(c => c.PartID);
         }
     }
 

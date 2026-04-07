@@ -4,6 +4,7 @@
 
 namespace carkaashiv_angular_API.Migrations
 {
+
     /// <inheritdoc />
     public partial class Add_PartDescription : Migration
     {
