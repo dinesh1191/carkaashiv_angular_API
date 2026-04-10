@@ -69,7 +69,7 @@ namespace carkaashiv_angular_API.Controllers
             {
                 /*** CLEAR EXISTING COOKIE if any ***/
                 Response.Cookies.Delete("jwtToken");
-                return Unauthorized(ApiResponse<string>.Fail("Invalid username or password"));
+                return Unauthorized(ApiResponse<string>.Fail(result.Message));
             }
             //Generate token
             var token = _tokenService.GenerateJwtToken(

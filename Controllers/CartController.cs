@@ -11,7 +11,7 @@ using System.Security.Claims;
 
 namespace carkaashiv_angular_API.Controllers
 {
-    [Authorize(Roles = "customer")]
+    [Authorize(Roles = "customer")] // cart is exclusive of customer only
     [ApiController]
     [Route("api/[controller]")]
     public class CartController : BaseController

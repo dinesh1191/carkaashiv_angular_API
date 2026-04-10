@@ -7,17 +7,18 @@ using carkaashiv_angular_API.Models.Auth;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 namespace carkaashiv_angular_API.Services
 {
-    
+
     public class AuthService : IAuthService
     {
         private readonly AppDbContext _context;
 
         public AuthService(AppDbContext context)
         {
-         
+
             _context = context;
 
         }
@@ -34,7 +35,7 @@ namespace carkaashiv_angular_API.Services
                 Email = dto.Email,
                 Role = dto.Role
             };
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.password);           
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.password);
             await _context.tbl_user.AddAsync(user);
             await _context.SaveChangesAsync();
             return true;
@@ -53,7 +54,7 @@ namespace carkaashiv_angular_API.Services
                 Phone = dto.Phone,
                 Email = dto.Email,
                 Role = dto.Role
-            };           
+            };
             emp.EmpPasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
             await _context.tbl_emp.AddAsync(emp);
             await _context.SaveChangesAsync();
@@ -62,50 +63,53 @@ namespace carkaashiv_angular_API.Services
 
         public async Task<AuthResult> LoginAsync(LoginRequest request)
         {
-          
+
             if (string.IsNullOrWhiteSpace(request.Username) ||
                     (string.IsNullOrWhiteSpace(request.Password)))
-                {
-               
+            {
+
                 return new AuthResult
-                    {
-                        Success = false,
-                        Message = "Invalid Input"
-                    };
-                }
-
-                bool isEmail = request.Username.Contains("@");
-                if (isEmail)
                 {
-                    var employee = await _context.tbl_emp.FirstOrDefaultAsync(e => e.Email == request.Username);
-                    if (employee == null || !BCrypt.Net.BCrypt.Verify(request.Password, employee.EmpPasswordHash))
-                    {
-                        return new AuthResult
-                        {
-                            Success = false,
-                            Message = "Invalid credentials"
+                    Success = false,
+                    Message = "Invalid Input"
+                };
+            }
+            bool isPhoneNumber = IsvalidPhoneNumber(request.Username);
+            bool isCorporateEmail = IsValidCorporateEmail(request.Username);       
 
-                        };
-                    }
-                    var responseDto = new LoginResponseDto
-                    {
-                        Id = employee.Id,                       
-                        Email = employee.Email,
-                        Role = employee.Role,
-                    };
+            if (isCorporateEmail)
+            {
+                var employee = await _context.tbl_emp.FirstOrDefaultAsync(e => e.Email == request.Username);
+
+                if (employee == null || !BCrypt.Net.BCrypt.Verify(request.Password, employee.EmpPasswordHash))
+                {
                     return new AuthResult
                     {
-                        Success = true,
-                        Message = "Login sucessful",
-                        Data = responseDto,
-                        Token = null // taken generated in controller
+                        Success = false,
+                        Message = "Invalid credentials"
+
                     };
                 }
-                            
-                     else
+                var responseDto = new LoginResponseDto
+                {
+                    Id = employee.Id,
+                    Email = employee.Email,
+                    Role = employee.Role,
+                };
+                return new AuthResult
+                {
+                    Success = true,
+                    Message = "Login sucessful",
+                    Data = responseDto,
+                    Token = null // taken generated in controller
+                };
+            }
 
-                     {
+            else if (isPhoneNumber)
+
+            {
                 //======Customer login flow=======
+
                 var customer = await _context.tbl_user
                     .FirstOrDefaultAsync(c => c.Phone == request.Username);
 
@@ -120,7 +124,7 @@ namespace carkaashiv_angular_API.Services
                 }
                 var responseDto = new LoginResponseDto
                 {
-                    Id = customer.Id,                    
+                    Id = customer.Id,
                     Email = customer.Email,
                     Role = customer.Role,
                 };
@@ -132,8 +136,17 @@ namespace carkaashiv_angular_API.Services
                 };
 
             }
+            else
+            {
+                return new AuthResult
+                {
+                    Success = false,
+                    Message = "Please enter a valid corporate eamil or phone number"
+                };
+
+            }
         }
-     
+
 
         public async Task<object?> GetCurrentUserAsync(ClaimsPrincipal user)
         {
@@ -160,12 +173,25 @@ namespace carkaashiv_angular_API.Services
                     .FirstOrDefaultAsync();
             }
         }
-       
+
+
+        // helper methods for validation request
+        private bool IsValidCorporateEmail(string input)
+        {
+
+            return Regex.IsMatch(
+                input,
+                @"^[a-zA-Z0-9._%+-]+@kaashiv\.com$",
+                RegexOptions.IgnoreCase);
+        }
+        private bool IsvalidPhoneNumber(string input)
+        {
+            return Regex.IsMatch(input, @"^[06789]\d{9}$");
+        }
 
 
 
 
-}
-
+    } 
 }
 
