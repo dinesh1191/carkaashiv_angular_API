@@ -11,6 +11,8 @@ namespace carkaashiv_angular_API.DTOs
         ErrorMessage = "Email must be a @kaashiv.com address")]
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
+        [RegularExpression(@"^[6-9]\d{9}$",
+         ErrorMessage = "Phone must be a valid 10-digit mobile number")]
         public string Phone { get; set; } = string.Empty;
     }
 }

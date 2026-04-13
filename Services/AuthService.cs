@@ -33,7 +33,7 @@ namespace carkaashiv_angular_API.Services
                 Name = dto.Name,
                 Phone = dto.phone,
                 Email = dto.Email,
-                Role = dto.Role
+                Role = "customer"
             };
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.password);
             await _context.tbl_user.AddAsync(user);
