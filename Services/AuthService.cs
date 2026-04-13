@@ -53,7 +53,7 @@ namespace carkaashiv_angular_API.Services
                 Name = dto.Name,
                 Phone = dto.Phone,
                 Email = dto.Email,
-                Role = dto.Role
+                Role = "employee"   
             };
             emp.EmpPasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
             await _context.tbl_emp.AddAsync(emp);

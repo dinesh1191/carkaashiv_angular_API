@@ -110,26 +110,26 @@ namespace carkaashiv_angular_API.Services
         }
 
 
-        public async Task<ApiResponse<object>> RegisterEmployeeAsync(RegisterEmployeeDto dto)
-        {
-            // Check if email already exists
-            if (await _context.tbl_emp.AnyAsync(x => x.Email == dto.Email))
-                return ApiResponse<object>.Fail("Email already exists");
+        //public async Task<ApiResponse<object>> RegisterEmployeeAsync(RegisterEmployeeDto dto)
+        //{
+        //    // Check if email already exists
+        //    if (await _context.tbl_emp.AnyAsync(x => x.Email == dto.Email))
+        //        return ApiResponse<object>.Fail("Email already exists");
 
-            var emp = new Employee
-            {
-                Name = dto.Name,
-                Phone = dto.Phone,
-                Email = dto.Email,
-                Role = dto.Role,
-                EmpPasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password)
-            };
+        //    var emp = new Employee
+        //    {
+        //        Name = dto.Name,
+        //        Phone = dto.Phone,
+        //        Email = dto.Email,
+        //        Role = "employee",
+        //        EmpPasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password)
+        //    };
 
-            await _context.tbl_emp.AddAsync(emp);
-            await _context.SaveChangesAsync();
+        //    await _context.tbl_emp.AddAsync(emp);
+        //    await _context.SaveChangesAsync();
 
-            return ApiResponse<object>.Ok("Employee registered successfully");
-        }
+        //    return ApiResponse<object>.Ok("Employee registered successfully");
+        //}
     }
 
 

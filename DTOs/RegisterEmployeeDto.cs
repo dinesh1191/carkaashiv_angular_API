@@ -5,8 +5,7 @@ namespace carkaashiv_angular_API.DTOs
 {
     public class RegisterEmployeeDto
     {
-        public string Name { get; set; } = string.Empty;
-        public string Role {  get; set; }  = string.Empty;
+        public string Name { get; set; } = string.Empty;     
         [EmailAddress]
         [RegularExpression(@"^[a-zA-Z0-9._%+-]+@kaashiv\.com$",
         ErrorMessage = "Email must be a @kaashiv.com address")]
