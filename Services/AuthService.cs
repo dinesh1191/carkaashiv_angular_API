@@ -141,7 +141,7 @@ namespace carkaashiv_angular_API.Services
                 return new AuthResult
                 {
                     Success = false,
-                    Message = "Please enter a valid corporate eamil or phone number"
+                    Message = "Please enter a valid corporate email or phone number"
                 };
 
             }

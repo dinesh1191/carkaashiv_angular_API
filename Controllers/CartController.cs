@@ -1,13 +1,8 @@
 ﻿using carkaashiv_angular_API.DTOs;
 using carkaashiv_angular_API.Interfaces;
-using carkaashiv_angular_API.Models;
 using carkaashiv_angular_API.Models.Shared;
-using carkaashiv_angular_API.Services;
 using Microsoft.AspNetCore.Authorization;
-
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace carkaashiv_angular_API.Controllers
 {

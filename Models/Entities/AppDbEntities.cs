@@ -131,15 +131,16 @@ namespace carkaashiv_angular_API.Models
         [Column("added_date")]
         public DateTime? AddedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }
-        public User? User { get; set; } //help Entity Framework understand relationships between tables.
-        
-        public Part? Part { get; set; }    
+        public User? User { get; set; } // help Entity Framework understand relationships between tables.
+
+        public Part? Part { get; set; } 
+
       }
 
 
 
 
-    public class Orders
+    public class Order
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -147,39 +148,49 @@ namespace carkaashiv_angular_API.Models
         public int OrderId { get; set; }
 
         [Column("u_id")]
-        public int UId { get; set; }
+        public int UserId { get; set; }
 
+        [Column("subtotal_amount")]
+        public decimal SubtotalAmount { get; set; }
+
+        [Column("tax_amount")]
+        public decimal TaxAmount { get; set; }
+    
         [Column("total_amount")]
-        public decimal? TotalAmount { get; set; }
+        public decimal TotalAmount { get; set; }
 
         [Column("status")]
-        public string? Status { get; set; }
+        public string Status { get; set; } = "Pending";
+
+        [Column("invoice_number")]
+        public string? InvoiceNumber {  get; set; }    
 
         [Column("created_at")]
-        public DateTime? CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     }
 
-    public class OrderItems
+    public class OrderItem
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("order_item_id")]
-        public int? OrderItemId { get; set; }
+        public int OrderItemId { get; set; }
 
         [Column("order_id")]
-        public int? OrderId { get; set; }
+        public int OrderId { get; set; }
 
         [Column("part_id")]
-        public int? PartId { get; set; }
+        public int PartId { get; set; }
 
         [Column("quantity")]
-        public int? Quantity { get; set; }
+        public int Quantity { get; set; }
 
         [Column("unit_price")]
-        public decimal? UnitPrice { get; set; }
+        public decimal UnitPrice { get; set; }
 
         [Column("total_price")]
-        public decimal? totalPrice { get; set; }
+        public decimal TotalPrice { get; set; }
 
     }
 

@@ -15,26 +15,28 @@ namespace carkaashiv_angular_API.Data
             public DbSet<Employee> tbl_emp { get; set; } //Maps to employee table
             public DbSet<User> tbl_user { get; set; }  //Maps to user Table
             public DbSet<Cart> tbl_cart { get; set; }  //Maps to cart table
-            public DbSet<Orders> tbl_orders { get; set; }  //Maps to order table
-            public DbSet<OrderItems> tbl_order_items { get; set; }  //Maps to cart orderItems
+            public DbSet<Order> tbl_orders { get; set; }  //Maps to order table
+            public DbSet<OrderItem> tbl_order_items { get; set; }  //Maps to cart orderItems
        
         // adding precision for columns store moneytery values
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<OrderItems>(entity =>
+            modelBuilder.Entity<OrderItem>(entity =>
             {
                 entity.Property(e => e.UnitPrice)
                 .HasPrecision(18, 2);
-                entity.Property(e => e.totalPrice)
-                .HasPrecision(18, 2);
+                entity.Property(e => e.TotalPrice)
+                .HasPrecision(18, 2);              
             });
 
-            modelBuilder.Entity<Orders>(entity =>
+            modelBuilder.Entity<Order>(entity =>
             {
                 entity.Property(e => e.TotalAmount)
                 .HasPrecision(18, 2);
+                entity.Property(e => e.CreatedAt)
+               .HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
 
             modelBuilder.Entity<Part>(entity =>
