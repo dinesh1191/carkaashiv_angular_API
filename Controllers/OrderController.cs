@@ -20,6 +20,8 @@ namespace carkaashiv_angular_API.Controllers
         public async Task<IActionResult> PlaceOrder()
         {
             var result = await _orderService.PlaceOrderAsync(CurrentUserId);
+            if (result == null)
+                return BadRequest(new { message = "Cart is empty" });
             return Ok(result);
         }
     }

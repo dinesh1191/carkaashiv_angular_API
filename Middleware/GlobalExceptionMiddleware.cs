@@ -15,7 +15,6 @@ namespace carkaashiv_angular_API.Middleware
             ILogger<GlobalExceptionMiddleware> logger,
             IWebHostEnvironment env)
         {
-
             _next = next;
             _logger = logger;
             _env = env;
@@ -30,27 +29,27 @@ namespace carkaashiv_angular_API.Middleware
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unhandled exception occured");
-
                 context.Response.ContentType = "application/json";
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-
+                context.Response.StatusCode = ex switch
+                {
+                    ArgumentException => (int)HttpStatusCode.BadRequest,
+                    UnauthorizedAccessException => (int)HttpStatusCode.Unauthorized,
+                    KeyNotFoundException => (int)HttpStatusCode.NotFound,
+                    _ => (int)HttpStatusCode.InternalServerError
+                };                
                 var response = new ErrorResponse
                 {
                     Success = false,
-                    Message = "Something went wrong."
+                    Message =_env.IsDevelopment()?ex.Message: "Something went wrong."
                 };
 
                 if (_env.IsDevelopment())
                 {
-                    response.Message = ex.Message;
+                    response.Message = ex.InnerException?.Message ?? ex.Message;
                     response.StackTrace = ex.StackTrace;
                 }
                 var json = JsonSerializer.Serialize(response);
                 await context.Response.WriteAsync(json);
-
-
-
-
             }
         }
     }

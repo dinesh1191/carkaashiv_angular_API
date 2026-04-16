@@ -28,8 +28,7 @@ namespace carkaashiv_angular_API.Services
 
             // Step 2: Validate cart is not empty
             if (!cartItems.Any())
-                throw new Exception("Cart is empty");
-           
+                throw new ArgumentException("Cart is empty");
 
             // Step 3: Calculate billing values
             // Subtotal = sum of (quantity * price) for each cart item
@@ -63,9 +62,13 @@ namespace carkaashiv_angular_API.Services
                 // Save order first to generate OrderId from DB
                 _context.tbl_orders.Add(order);
                 await _context.SaveChangesAsync();
+                
+
+
                 // Step 5.1 Generate and presist invoice number using generated OrderId
                 order.InvoiceNumber = GenerateInvoiceNumber(order.OrderId);
                 await _context.SaveChangesAsync();
+              
 
                 // Step 6: Create order line items
                 // Each purchased product becomes one row
@@ -87,7 +90,7 @@ namespace carkaashiv_angular_API.Services
                 // Both tables persist successfully
                 _context.tbl_cart.RemoveRange(cartItems);//clear cart table
                 await _context.SaveChangesAsync();// save then proceed transcation commit
-                await transaction.CommitAsync();
+                await transaction.CommitAsync();//Without commit, the API may return success while DB silently rolls back at dispose.
 
                 // Step 8: Return response DTO for frontend
                 return new OrderResponseDto
