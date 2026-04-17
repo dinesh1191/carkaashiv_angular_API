@@ -19,9 +19,10 @@ namespace carkaashiv_angular_API.Controllers
         [HttpPost("place-order")]
         public async Task<IActionResult> PlaceOrder()
         {
-            var result = await _orderService.PlaceOrderAsync(CurrentUserId);
-            if (result == null)
-                return BadRequest(new { message = "Cart is empty" });
+            var key = Request.Headers["Idempotency-Key"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(key))
+                return BadRequest(new { message = "Idempotency-key header is required"});
+            var result = await _orderService.PlaceOrderAsync(CurrentUserId,key);           
             return Ok(result);
         }
     }

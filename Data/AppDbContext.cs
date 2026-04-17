@@ -1,4 +1,5 @@
-﻿using carkaashiv_angular_API.Models;
+﻿using carkaashiv_angular_API.DTOs;
+using carkaashiv_angular_API.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace carkaashiv_angular_API.Data
@@ -18,6 +19,8 @@ namespace carkaashiv_angular_API.Data
             public DbSet<Order> tbl_orders { get; set; }  //Maps to order table
             public DbSet<OrderItem> tbl_order_items { get; set; }  //Maps to cart orderItems
        
+        public DbSet<OrderIdempotency> OrderIdempotencies { get; set; }
+
         // adding precision for columns store moneytery values
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -64,9 +67,15 @@ namespace carkaashiv_angular_API.Data
             .HasOne(c => c.Part)
             .WithMany()
             .HasForeignKey(c => c.PartID);
+
+            modelBuilder.Entity<OrderIdempotency>()
+            .HasIndex(x => new { x.UserId, x.IdempotencyKey })
+            .IsUnique();
+            modelBuilder.Entity<OrderIdempotency>()
+                .Property(x => x.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
         }
+       }  
+ 
     }
-
-
-    
-}
