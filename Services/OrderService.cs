@@ -4,6 +4,10 @@ using carkaashiv_angular_API.DTOs;
 using carkaashiv_angular_API.Interfaces;
 using carkaashiv_angular_API.Models;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using System.Diagnostics;
+using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using static Azure.Core.HttpHeader;
 
@@ -18,48 +22,40 @@ namespace carkaashiv_angular_API.Services
         }
         public async Task<OrderResponseDto> PlaceOrderAsync(int userId, string idempotencyKey)
         {
-            // checkout lifecycle: Fetch idempotency → if exists return else ;Fetch cart → calculate totals → save bill header → save bill items → clear cart -> commit -> return response
-            //Step:0 Idempotency OrderId check
-            var existingOrderId = await _context.OrderIdempotencies
-                .Where(x => x.UserId == userId && x.IdempotencyKey == idempotencyKey)
-                .Select(x=> x.OrderId)
-                .FirstOrDefaultAsync();
+            // Check → Process → Persist → Handle race → Return
 
-            if (existingOrderId != 0)
-            {
-                var order = await GetOrderOrThrow(existingOrderId);
-                return MapToResponse(order);
-            }
+           
+            // Step 0: Fetch all cart items for the current user and begin transactions
             using var transaction = await _context.Database.BeginTransactionAsync();
-            // Step 1: Fetch all cart items for the current user
-            // Include Part entity to access product price details
-            var cartItems = await _context.tbl_cart
+            try
+            {
+                // Step 0: Fetch cart
+                var cartItems = await _context.tbl_cart
                 .Where(c => c.UId == userId)
                 .Include(c => c.Part)
                 .ToListAsync();
 
-            // Step 2: Validate cart is not empty
-            if (!cartItems.Any())
-                throw new ArgumentException("Cart is empty");
+                if (!cartItems.Any())
+                    throw new ArgumentException("Cart is empty");
 
-            // Step 3: Calculate billing values
-            // Subtotal = sum of (quantity * price) for each cart item
-            var subtotal = cartItems.Sum(x =>
-                x.Quantity * (x.Part?.PPrice ?? 0m));
+                // Step:1  Fast path — check existing order
+                var existingOrderId = await _context.OrderIdempotencies
+                    .Where(x => x.UserId == userId && x.IdempotencyKey == idempotencyKey)
+                    .Select(x => x.OrderId)
+                    .FirstOrDefaultAsync();
 
-            // Apply 18% tax
-            var tax = subtotal * 0.18m;
+                if (existingOrderId > 0)
+                {
+                    var existingOrder = await GetOrderOrThrow(existingOrderId);
+                    return MapToResponse(existingOrder);
+                }
 
-            // Final payable amount
-            var total = subtotal + tax;
+                // Step 2: Calculate totals
+                var subtotal = cartItems.Sum(x => x.Quantity * (x.Part?.PPrice ?? 0m));
+                var tax = subtotal * 0.18m;  // Apply 18% tax              
+                var total = subtotal + tax;  // Final payable amount
 
-            // Step 4: Start DB transaction
-            // Ensures both order header and order items are saved together
-           
-
-            try
-            {
-                // Step 5: Create order header (bill summary)
+                // Step 3:Create order          
                 var order = new Order
                 {
                     UserId = userId,
@@ -67,57 +63,54 @@ namespace carkaashiv_angular_API.Services
                     TaxAmount = tax,
                     TotalAmount = total,
                     Status = "Completed",
-                    InvoiceNumber = string.Empty //create order initially 
-                    // created_at handled by DB default
+                    InvoiceNumber = string.Empty
                 };
-
-                // Save order first to generate OrderId from DB
                 _context.tbl_orders.Add(order);
                 await _context.SaveChangesAsync();
 
-                // Step 5.1 Generate and presist invoice number using generated OrderId
+                // Step 4: Generate invoice
                 order.InvoiceNumber = GenerateInvoiceNumber(order.OrderId);
                 await _context.SaveChangesAsync();
 
-
-                // Step 6: Create order items + store idempotency
-                // Each purchased product becomes one row
-                var orderItems = cartItems.Select(item => new OrderItem
-                {
-                    // Use generated OrderId from saved order header
-                    OrderId = order.OrderId,
-                    PartId = item.PartID,
-                    Quantity = item.Quantity,
-                    UnitPrice = item.Part?.PPrice ?? 0m, // Store price snapshot at purchase time
-                    TotalPrice = item.Quantity * (item.Part?.PPrice ?? 0m) // Total per line item
-                }).ToList();
-
-                // Save all line items
-                _context.tbl_order_items.AddRange(orderItems);
-
+                // Step 5: Lock idempotency early (important)
                 _context.OrderIdempotencies.Add(new OrderIdempotency
                 {
                     UserId = userId,
                     IdempotencyKey = idempotencyKey,
                     OrderId = order.OrderId
-                });         
-              
-                // Step 7: Clear cart table and commit transaction              
-                _context.tbl_cart.RemoveRange(cartItems);               
-                await _context.SaveChangesAsync(); // save first then proceed transcation commit
+                });
+                await _context.SaveChangesAsync();
+
+
+                // Step 6: Save order items
+
+                var orderItems = cartItems.Select(item => new OrderItem
+                {
+                    OrderId = order.OrderId,//Use generated OrderId from saved order header
+                    PartId = item.PartID,
+                    Quantity = item.Quantity,
+                    UnitPrice = item.Part?.PPrice ?? 0m, // Store price snapshot at purchase time
+                    TotalPrice = item.Quantity * (item.Part?.PPrice ?? 0m) // Total per line item
+                });
+
+                _context.tbl_order_items.AddRange(orderItems);// Save all line items
+                
+                // Step 7:Clear cart
+                _context.tbl_cart.RemoveRange(cartItems);
+                await _context.SaveChangesAsync();
+
+                // Step 8: Commit            
                 await transaction.CommitAsync(); // Without commit, the API may return success while DB silently rolls back at dispose.
-
-                // Step 8: Return response DTO for frontend
-
-                return MapToResponse(order);               
+                return MapToResponse(order); //Return response DTO for frontend
             }
             catch (DbUpdateException)
             {
-                // Rollback everything if any step fails
-                await transaction.RollbackAsync();
+                await transaction.RollbackAsync();// Rollback everything if any step fails
+
 
                 var existingKey = await _context.OrderIdempotencies
-                    .FirstOrDefaultAsync(x => x.UserId == userId && x.IdempotencyKey == idempotencyKey);
+                    .FirstOrDefaultAsync(x =>
+                    x.UserId == userId && x.IdempotencyKey == idempotencyKey);
 
                 if (existingKey != null)
                 {
@@ -132,9 +125,6 @@ namespace carkaashiv_angular_API.Services
         {
             return $"INV-{DateTime.UtcNow:yyyyMMdd}-{orderId:D5}";
         }
-
-
-      
 
         private async Task<Order> GetOrderOrThrow(int orderId)
         {
@@ -155,9 +145,13 @@ namespace carkaashiv_angular_API.Services
                 TotalAmount = order.TotalAmount
             };
         }
-
+        public static class DbExceptionHelper
+        {
+            public static bool IsUniqueConstraintViolation(DbUpdateException ex)
+            {
+                return ex.InnerException is PostgresException pgEx && pgEx.SqlState == "23505";
+            }
+        }
 
     } 
-
-
 }

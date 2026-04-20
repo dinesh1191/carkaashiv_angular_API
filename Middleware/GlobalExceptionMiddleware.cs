@@ -36,18 +36,14 @@ namespace carkaashiv_angular_API.Middleware
                     UnauthorizedAccessException => (int)HttpStatusCode.Unauthorized,
                     KeyNotFoundException => (int)HttpStatusCode.NotFound,
                     _ => (int)HttpStatusCode.InternalServerError
-                };                
+                };
                 var response = new ErrorResponse
                 {
                     Success = false,
-                    Message =_env.IsDevelopment()?ex.Message: "Something went wrong."
+                    Message = _env.IsDevelopment()?
+                    ex.InnerException?.Message ?? ex.Message: "Something went wrong.",
+                    StackTrace = _env.IsDevelopment() ? ex.StackTrace : null
                 };
-
-                if (_env.IsDevelopment())
-                {
-                    response.Message = ex.InnerException?.Message ?? ex.Message;
-                    response.StackTrace = ex.StackTrace;
-                }
                 var json = JsonSerializer.Serialize(response);
                 await context.Response.WriteAsync(json);
             }
