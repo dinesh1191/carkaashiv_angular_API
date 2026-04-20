@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using carkaashiv_angular_API.Models;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace carkaashiv_angular_API.Models
@@ -163,12 +164,14 @@ namespace carkaashiv_angular_API.Models
         public string Status { get; set; } = "Pending";
 
         [Column("invoice_number")]
-        public string? InvoiceNumber {  get; set; }    
+        public string? InvoiceNumber {  get; set; }
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
+        public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     }
+
+}
 
     public class OrderItem
     {
@@ -191,7 +194,6 @@ namespace carkaashiv_angular_API.Models
 
         [Column("total_price")]
         public decimal TotalPrice { get; set; }
-
-    }
+        public Part Part { get; set; } = null!; 
 
 }

@@ -25,5 +25,14 @@ namespace carkaashiv_angular_API.Controllers
             var result = await _orderService.PlaceOrderAsync(CurrentUserId,key);           
             return Ok(result);
         }
+
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetOrderById(int id)
+        {
+            var order = await _orderService.GetOrderByIdAsync(CurrentUserId,id);
+            return Ok(order);
+        }
+
     }
 }

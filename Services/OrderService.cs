@@ -20,7 +20,7 @@ namespace carkaashiv_angular_API.Services
         {
             _context = context;
         }
-        public async Task<OrderResponseDto> PlaceOrderAsync(int userId, string idempotencyKey)
+        public async Task<OrderResponseDto> PlaceOrderAsync(int currentUserId, string idempotencyKey)
         {
             // Check → Process → Persist → Handle race → Return
 
@@ -31,7 +31,7 @@ namespace carkaashiv_angular_API.Services
             {
                 // Step 0: Fetch cart
                 var cartItems = await _context.tbl_cart
-                .Where(c => c.UId == userId)
+                .Where(c => c.UId == currentUserId)
                 .Include(c => c.Part)
                 .ToListAsync();
 
@@ -40,7 +40,7 @@ namespace carkaashiv_angular_API.Services
 
                 // Step:1  Fast path — check existing order
                 var existingOrderId = await _context.OrderIdempotencies
-                    .Where(x => x.UserId == userId && x.IdempotencyKey == idempotencyKey)
+                    .Where(x => x.UserId == currentUserId && x.IdempotencyKey == idempotencyKey)
                     .Select(x => x.OrderId)
                     .FirstOrDefaultAsync();
 
@@ -58,7 +58,7 @@ namespace carkaashiv_angular_API.Services
                 // Step 3:Create order          
                 var order = new Order
                 {
-                    UserId = userId,
+                    UserId = currentUserId,
                     SubtotalAmount = subtotal,
                     TaxAmount = tax,
                     TotalAmount = total,
@@ -75,7 +75,7 @@ namespace carkaashiv_angular_API.Services
                 // Step 5: Lock idempotency early (important)
                 _context.OrderIdempotencies.Add(new OrderIdempotency
                 {
-                    UserId = userId,
+                    UserId = currentUserId,
                     IdempotencyKey = idempotencyKey,
                     OrderId = order.OrderId
                 });
@@ -110,7 +110,7 @@ namespace carkaashiv_angular_API.Services
 
                 var existingKey = await _context.OrderIdempotencies
                     .FirstOrDefaultAsync(x =>
-                    x.UserId == userId && x.IdempotencyKey == idempotencyKey);
+                    x.UserId == currentUserId && x.IdempotencyKey == idempotencyKey);
 
                 if (existingKey != null)
                 {
@@ -119,6 +119,41 @@ namespace carkaashiv_angular_API.Services
                 }
                 throw;
             }
+        }
+
+        public async Task<OrderDetailDto> GetOrderByIdAsync(int currentUserId, int orderId)
+        {
+
+
+
+            var order = await _context.tbl_orders
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(i => i.Part)
+                    .FirstOrDefaultAsync(o => o.OrderId == orderId);
+            if (order == null)
+                throw new KeyNotFoundException("Order not found");
+            // Authorization check after retrieval
+            if (order?.UserId != currentUserId)
+                throw new UnauthorizedAccessException("Access denied");
+
+            return new OrderDetailDto
+            {
+                OrderId = order.OrderId,
+                InvoiceNumber = order.InvoiceNumber ?? string.Empty,
+                CreatedAt = order.CreatedAt,
+                Status = order.Status,
+                SubtotalAmount = order.SubtotalAmount,
+                TaxAmount = order.TaxAmount,
+                TotalAmount = order.TotalAmount,
+                Items = order.OrderItems.Select(i => new OrderItemDto
+                {
+                    PartName = i.Part.PName,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice,
+                    TotalPrice = i.TotalPrice
+                }).ToList()
+            };
+
         }
 
         private string GenerateInvoiceNumber(int orderId)

@@ -4,6 +4,7 @@ namespace carkaashiv_angular_API.Interfaces
 {
     public interface IOrderService
     {
-        Task<OrderResponseDto>PlaceOrderAsync(int userId,string idempotencyKey);
+        Task<OrderResponseDto>PlaceOrderAsync(int currentUserId, string idempotencyKey);
+        Task<OrderDetailDto>GetOrderByIdAsync(int currentUserId, int orderId);
     }
 }
