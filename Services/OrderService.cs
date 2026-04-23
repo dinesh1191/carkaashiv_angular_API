@@ -122,12 +122,9 @@ namespace carkaashiv_angular_API.Services
         }
 
         public async Task<OrderDetailDto> GetOrderByIdAsync(int currentUserId, int orderId)
-        {
-
-
-
+        {  
             var order = await _context.tbl_orders
-                    .Include(o => o.OrderItems)
+                        .Include(o => o.OrderItems)
                         .ThenInclude(i => i.Part)
                     .FirstOrDefaultAsync(o => o.OrderId == orderId);
             if (order == null)
