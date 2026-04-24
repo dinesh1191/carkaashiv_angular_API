@@ -1,4 +1,5 @@
 ﻿using Amazon.S3.Model;
+using Azure;
 using carkaashiv_angular_API.Data;
 using carkaashiv_angular_API.DTOs;
 using carkaashiv_angular_API.Interfaces;
@@ -6,6 +7,8 @@ using carkaashiv_angular_API.Models;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
@@ -21,24 +24,26 @@ namespace carkaashiv_angular_API.Services
             _context = context;
         }
         public async Task<OrderResponseDto> PlaceOrderAsync(int currentUserId, string idempotencyKey)
-        {
-            // Check → Process → Persist → Handle race → Return
+        {            
+            // Order Flow:
+            // Fetch → Validate → Idempotency → Calculate → Create Order →
+            // Deduct Stock → Save Items → Clear Cart → Commit → Return
 
-           
-            // Step 0: Fetch all cart items for the current user and begin transactions
+            // Step 0: Begin transactions
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // Step 0: Fetch cart
+                // Step 1: Fetch cart
                 var cartItems = await _context.tbl_cart
                 .Where(c => c.UId == currentUserId)
                 .Include(c => c.Part)
                 .ToListAsync();
 
+               //Step 2.Validate Cart(empty / removed items)
                 if (!cartItems.Any())
-                    throw new ArgumentException("Cart is empty");
+                    throw new ArgumentException("Your cart is empty. Some items may have been removed or are no longer available.");
 
-                // Step:1  Fast path — check existing order
+                // Step:3 Check Idempotency(prevent duplicate order)
                 var existingOrderId = await _context.OrderIdempotencies
                     .Where(x => x.UserId == currentUserId && x.IdempotencyKey == idempotencyKey)
                     .Select(x => x.OrderId)
@@ -50,12 +55,12 @@ namespace carkaashiv_angular_API.Services
                     return MapToResponse(existingOrder);
                 }
 
-                // Step 2: Calculate totals
+                // Step 4: Calculate totals(subtotal + tax)
                 var subtotal = cartItems.Sum(x => x.Quantity * (x.Part?.PPrice ?? 0m));
                 var tax = subtotal * 0.18m;  // Apply 18% tax              
                 var total = subtotal + tax;  // Final payable amount
 
-                // Step 3:Create order          
+                // Step 5:Create Order(Save → get OrderId)          
                 var order = new Order
                 {
                     UserId = currentUserId,
@@ -66,24 +71,24 @@ namespace carkaashiv_angular_API.Services
                     InvoiceNumber = string.Empty
                 };
                 _context.tbl_orders.Add(order);
+                // Save order first (need ID)
                 await _context.SaveChangesAsync();
-
-                // Step 4: Generate invoice
-                order.InvoiceNumber = GenerateInvoiceNumber(order.OrderId);
-                await _context.SaveChangesAsync();
-
-                // Step 5: Lock idempotency early (important)
-                _context.OrderIdempotencies.Add(new OrderIdempotency
+                // Step 5.1: Generate invoice with orderId
+                order.InvoiceNumber = GenerateInvoiceNumber(order.OrderId); 
+                
+                // Step 6: Validate & Deduct Stock(NO save inside loop)               
+                foreach (var item in cartItems)
                 {
-                    UserId = currentUserId,
-                    IdempotencyKey = idempotencyKey,
-                    OrderId = order.OrderId
-                });
-                await _context.SaveChangesAsync();
-
-
-                // Step 6: Save order items
-
+                    var part = item.Part;
+                    if (part == null)
+                        throw new Exception($"Part not found:{item.PartID}");
+                    var availableStock = part.PStock;
+                    if (availableStock < item.Quantity)
+                        throw new Exception($"Insufficient stock for:{part.PName}");
+                    // Deduct stock
+                    part.PStock -= item.Quantity;
+                }
+                 // Step 7: Save order items
                 var orderItems = cartItems.Select(item => new OrderItem
                 {
                     OrderId = order.OrderId,//Use generated OrderId from saved order header
@@ -92,22 +97,29 @@ namespace carkaashiv_angular_API.Services
                     UnitPrice = item.Part?.PPrice ?? 0m, // Store price snapshot at purchase time
                     TotalPrice = item.Quantity * (item.Part?.PPrice ?? 0m) // Total per line item
                 });
-
                 _context.tbl_order_items.AddRange(orderItems);// Save all line items
-                
-                // Step 7:Clear cart
-                _context.tbl_cart.RemoveRange(cartItems);
-                await _context.SaveChangesAsync();
+                // Step 8: Insert Idempotency record
+                _context.OrderIdempotencies.Add(new OrderIdempotency
+                {
+                    UserId = currentUserId,
+                    IdempotencyKey = idempotencyKey,
+                    OrderId = order.OrderId
+                });
 
-                // Step 8: Commit            
+                // Step 9:Clear Cart
+                _context.tbl_cart.RemoveRange(cartItems);
+                //Step 10:SaveChanges(single batch)                
+                await _context.SaveChangesAsync();
+                // Step 11: .Commit Transaction          
                 await transaction.CommitAsync(); // Without commit, the API may return success while DB silently rolls back at dispose.
                 return MapToResponse(order); //Return response DTO for frontend
+
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
                 await transaction.RollbackAsync();// Rollback everything if any step fails
-
-
+                
+                // Step 1: Idempotency recovery (keep this)
                 var existingKey = await _context.OrderIdempotencies
                     .FirstOrDefaultAsync(x =>
                     x.UserId == currentUserId && x.IdempotencyKey == idempotencyKey);
@@ -117,7 +129,14 @@ namespace carkaashiv_angular_API.Services
                     var order = await GetOrderOrThrow(existingKey.OrderId);
                     return MapToResponse(order);
                 }
-                throw;
+                // Step 2: Handle known DB issues gracefully
+                if (ex.InnerException?.Message.Contains("FK_tbl_cart_tbl_part_part_id") == true)
+
+                {
+                    throw new Exception("Items were removed because they are no longer available");
+                }
+                //Step 3: fallback(generic safe message)
+                throw new Exception("something went wrong while placing the order.Please try again.");
             }
         }
 
