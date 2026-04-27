@@ -2,7 +2,9 @@
 using Azure;
 using carkaashiv_angular_API.Data;
 using carkaashiv_angular_API.DTOs;
+using carkaashiv_angular_API.Exceptions;
 using carkaashiv_angular_API.Interfaces;
+using carkaashiv_angular_API.Middleware;
 using carkaashiv_angular_API.Models;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -41,7 +43,7 @@ namespace carkaashiv_angular_API.Services
 
                //Step 2.Validate Cart(empty / removed items)
                 if (!cartItems.Any())
-                    throw new ArgumentException("Your cart is empty. Some items may have been removed or are no longer available.");
+                    throw new BusinessException("Your cart is empty. Some items may have been removed or are no longer available.");
 
                 // Step:3 Check Idempotency(prevent duplicate order)
                 var existingOrderId = await _context.OrderIdempotencies

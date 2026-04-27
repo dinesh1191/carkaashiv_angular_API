@@ -34,6 +34,7 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 
 
 
+
 //AWS
 var awsSection = builder.Configuration.GetSection("AWS");
 
@@ -188,7 +189,6 @@ if (app.Environment.IsDevelopment())
     app.MapGet("/health", () => Results.Ok("Healthy"));
 }
 // Configure the HTTP request pipeline.
-
 app.UseHttpsRedirection();
 app.UseCors("AllowAngularApp");
 app.UseMiddleware<GlobalExceptionMiddleware>();
