@@ -1,4 +1,6 @@
-﻿using carkaashiv_angular_API.Interfaces;
+﻿using carkaashiv_angular_API.DTOs;
+using carkaashiv_angular_API.Interfaces;
+using carkaashiv_angular_API.Models.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,7 +28,6 @@ namespace carkaashiv_angular_API.Controllers
             return Ok(result);
         }
 
-
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOrderById(int id)
         {
@@ -34,5 +35,20 @@ namespace carkaashiv_angular_API.Controllers
             return Ok(order);
         }
 
+        [HttpPost("{orderId}/submit-payment")]
+        public async Task<IActionResult>SubmitPayment(int orderId, [FromBody] SubmitPaymentRequest request)
+        {      
+            await _orderService.SubmitPaymentAsync(CurrentUserId, orderId,request);          
+            return Ok(ApiResponse<object>.Ok("Payment submitted successfully"));          
+        }
+
+
+        [HttpPost("{orderId}/verify-payment")]
+        public async Task<IActionResult>VerifyPayment(int orderId,VerifyPaymentRequest request)
+        {
+          var result = await _orderService.VerifyPaymentAsync(orderId, request);
+            return Ok(ApiResponse<VerifyPaymentResult>.Ok("Payment verification completed",
+            result));
+        }
     }
 }

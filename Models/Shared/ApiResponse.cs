@@ -5,6 +5,8 @@
              public bool Success { get; set; }
              public string Message { get; set; }
              public T? Data { get; set; }
+
+
             public ApiResponse(bool success, string message, T? data = default)
             {
                 Success = success;
@@ -12,9 +14,12 @@
                 Data = data;
             }
             // Convenience static methods
-            public static ApiResponse<T> Ok(string message, T? data = default)
+            public static ApiResponse<T> Ok(string message, 
+                T? data = default)
                 => new(true, message, data);
-            public static ApiResponse<T> Fail(string message) => new(false, message);
-         
-      }
+            public static ApiResponse<T> Fail(string message)
+            => new(false, message);
+
+
+    }
     }

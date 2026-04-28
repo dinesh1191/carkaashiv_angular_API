@@ -98,7 +98,7 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero 
       };
 
-    /**To extract token from cookie **/
+    //**To extract token from cookie **//
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>

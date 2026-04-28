@@ -6,6 +6,7 @@ using carkaashiv_angular_API.Exceptions;
 using carkaashiv_angular_API.Interfaces;
 using carkaashiv_angular_API.Middleware;
 using carkaashiv_angular_API.Models;
+using carkaashiv_angular_API.Models.Shared;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -206,5 +207,110 @@ namespace carkaashiv_angular_API.Services
             }
         }
 
-    } 
+        public async Task<SubmitPaymentResult> SubmitPaymentAsync(int userId, int orderId, SubmitPaymentRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.PaymentMethod))
+                throw new BusinessException("Payment method required");
+           
+            var order = await _context.tbl_orders
+                .FirstOrDefaultAsync(o => o.OrderId == orderId && o.UserId == userId);
+
+            if (order == null)
+                throw new BusinessException("Order not found");
+
+            if (order.PaymentStatus == PaymentStatusConst.Submitted)
+                throw new BusinessException("Payment already submitted");
+
+            // update order
+            order.PaymentMethod = request.PaymentMethod;
+            order.PaymentReference = request.PaymentReference;
+            order.PaymentProofUrl = request.PaymentProofUrl;
+            order.PaymentStatus = PaymentStatusConst.Submitted;
+            order.PaymentSubmittedAt = DateTime.UtcNow;
+        
+
+
+            // insert payment
+            var payment = new OrderPayment
+            {
+                OrderId = orderId,
+                Amount = request.Amount,
+                PaymentMethod = request.PaymentMethod,
+                PaymentReference = request.PaymentReference,
+                PaymentProofUrl = request.PaymentProofUrl
+            };
+            _context.OrderPayments.Add(payment);
+            // single save (atomic)
+            await _context.SaveChangesAsync();
+
+            // mark order as submitted (not verified yet)
+            return new SubmitPaymentResult
+            {
+                PaymentId = payment.PaymentId,
+                Amount = payment.Amount,
+                SubmittedAt = payment.SubmittedAt
+            };          
+                    
+        }
+        public async Task<VerifyPaymentResult> VerifyPaymentAsync(int orderId, VerifyPaymentRequest request)
+        {
+            var order = await _context.tbl_orders
+                .FirstOrDefaultAsync(x => x.OrderId == orderId);
+
+            if (order == null)
+                throw new BusinessException("Order not found");
+
+            if (order.PaymentStatus != PaymentStatusConst.Submitted)
+                throw new BusinessException("Only submitted payments can be verified");
+            
+            if (request.VerifiedAmount <= 0)
+                throw new BusinessException("Invalid verified amount");
+
+
+            //System truth
+            var totalPaid = await _context.OrderPayments
+                     .Where(x => x.OrderId == orderId)
+                      .SumAsync(x => x.Amount);
+
+            var diff = totalPaid - order.TotalAmount;
+
+            order.VerifiedAmount = request.VerifiedAmount;
+            order.PaymentMismatchAmount = diff;
+            string verificationLabel;
+
+
+            // auto decision (still admin-triggered)
+            if (diff < 0)
+            {
+                order.PaymentStatus = PaymentStatusConst.Rejected;
+                verificationLabel = "UNDERPAID";
+            }
+            else if (diff == 0)
+            {
+                order.PaymentStatus = PaymentStatusConst.Verified;
+                order.Status = "Confirmed";
+                order.PaymentVerifiedAt = DateTime.UtcNow;
+                verificationLabel = "EXACT";
+            }
+            else
+            {
+                // Overpaid case
+                order.PaymentStatus = PaymentStatusConst.Verified;
+                order.Status = "Confirmed";
+                order.PaymentVerifiedAt = DateTime.UtcNow;
+                verificationLabel = "OVERPAID";
+            }
+            await _context.SaveChangesAsync();
+
+            return new VerifyPaymentResult
+            {
+                Label = verificationLabel,
+                ExpectedAmount = order.TotalAmount,
+                PaidAmount = request.VerifiedAmount,
+                MismatchAmount = diff
+            };
+
+        }
+
+    }
 }

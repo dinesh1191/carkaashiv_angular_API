@@ -178,6 +178,16 @@ namespace carkaashiv_angular_API.Models
         public string? PaymentStatus { get; set; } = "Pending"; //Pending/Submitted/Verified/Rejected
         [Column("payment_submitted_at")]
         public DateTime? PaymentSubmittedAt { get; set; }
+
+        [Column("verified_amount")]
+        public decimal? VerifiedAmount { get; set; }
+
+        [Column("payment_mismatch_amount")]
+        public decimal? PaymentMismatchAmount { get; set; }
+
+        [Column("payment_verified_at")]
+        public DateTime? PaymentVerifiedAt { get; set; }
+
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     }
 
@@ -206,4 +216,48 @@ namespace carkaashiv_angular_API.Models
         public decimal TotalPrice { get; set; }
         public Part Part { get; set; } = null!; 
 
+}
+
+public class OrderIdempotency
+{
+    [Key]
+    [Column("Id")]
+    public int Id { get; set; }
+
+    [Column("IdempotencyKey")]
+    public string IdempotencyKey { get; set; } = default!;
+
+    [Column("UserId")]
+    public int UserId { get; set; }
+
+    [Column("OrderId")]
+    public int OrderId { get; set; }
+
+    [Column("CreatedAt")]
+    public DateTime CreatedAt { get; set; }
+}
+public class OrderPayment
+{
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Column("payment_id")]
+    public int PaymentId { get; set; }
+
+    [Column("order_id")]
+    public int OrderId { get; set; }
+
+    [Column("amount")]
+    public decimal Amount { get; set; }
+
+    [Column("payment_method")]
+    public string PaymentMethod { get; set; } = default!;
+
+    [Column("payment_reference")]
+    public string PaymentReference { get; set; } = default!;
+
+    [Column("payment_proof_url")]
+    public string? PaymentProofUrl { get; set; }
+
+    [Column("submitted_at")]
+    public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
 }

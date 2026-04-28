@@ -18,8 +18,8 @@ namespace carkaashiv_angular_API.Data
             public DbSet<Cart> tbl_cart { get; set; }  //Maps to cart table
             public DbSet<Order> tbl_orders { get; set; }  //Maps to order table
             public DbSet<OrderItem> tbl_order_items { get; set; }  //Maps to cart orderItems
-       
-        public DbSet<OrderIdempotency> OrderIdempotencies { get; set; }
+            public DbSet<OrderIdempotency> OrderIdempotencies { get; set; }
+            public DbSet<OrderPayment> OrderPayments { get; set; }
 
         // adding precision for columns store moneytery values
         protected override void OnModelCreating(ModelBuilder modelBuilder)
