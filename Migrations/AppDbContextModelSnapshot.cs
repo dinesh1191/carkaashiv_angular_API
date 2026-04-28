@@ -197,6 +197,26 @@ namespace carkaashiv_angular_API.Migrations
                         .HasColumnType("text")
                         .HasColumnName("invoice_number");
 
+                    b.Property<string>("PaymentMethod")
+                        .HasColumnType("text")
+                        .HasColumnName("payment_method");
+
+                    b.Property<string>("PaymentProofUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("payment_proof_url");
+
+                    b.Property<string>("PaymentReference")
+                        .HasColumnType("text")
+                        .HasColumnName("payment_reference");
+
+                    b.Property<string>("PaymentStatus")
+                        .HasColumnType("text")
+                        .HasColumnName("payment_status");
+
+                    b.Property<DateTime?>("PaymentSubmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("payment_submitted_at");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text")

@@ -12,8 +12,8 @@ using carkaashiv_angular_API.Data;
 namespace carkaashiv_angular_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260417111119_AddOrderIdempotency")]
-    partial class AddOrderIdempotency
+    [Migration("20260428061712_InitialBaselineClean")]
+    partial class InitialBaselineClean
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,46 @@ namespace carkaashiv_angular_API.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("OrderItem", b =>
+                {
+                    b.Property<int>("OrderItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("order_item_id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OrderItemId"));
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer")
+                        .HasColumnName("order_id");
+
+                    b.Property<int>("PartId")
+                        .HasColumnType("integer")
+                        .HasColumnName("part_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("total_price");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("unit_price");
+
+                    b.HasKey("OrderItemId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("PartId");
+
+                    b.ToTable("tbl_order_items");
+                });
 
             modelBuilder.Entity("carkaashiv_angular_API.DTOs.OrderIdempotency", b =>
                 {
@@ -160,6 +200,26 @@ namespace carkaashiv_angular_API.Migrations
                         .HasColumnType("text")
                         .HasColumnName("invoice_number");
 
+                    b.Property<string>("PaymentMethod")
+                        .HasColumnType("text")
+                        .HasColumnName("payment_method");
+
+                    b.Property<string>("PaymentProofUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("payment_proof_url");
+
+                    b.Property<string>("PaymentReference")
+                        .HasColumnType("text")
+                        .HasColumnName("payment_reference");
+
+                    b.Property<string>("PaymentStatus")
+                        .HasColumnType("text")
+                        .HasColumnName("payment_status");
+
+                    b.Property<DateTime?>("PaymentSubmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("payment_submitted_at");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text")
@@ -185,42 +245,6 @@ namespace carkaashiv_angular_API.Migrations
                     b.HasKey("OrderId");
 
                     b.ToTable("tbl_orders");
-                });
-
-            modelBuilder.Entity("carkaashiv_angular_API.Models.OrderItem", b =>
-                {
-                    b.Property<int>("OrderItemId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("order_item_id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OrderItemId"));
-
-                    b.Property<int>("OrderId")
-                        .HasColumnType("integer")
-                        .HasColumnName("order_id");
-
-                    b.Property<int>("PartId")
-                        .HasColumnType("integer")
-                        .HasColumnName("part_id");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer")
-                        .HasColumnName("quantity");
-
-                    b.Property<decimal>("TotalPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)")
-                        .HasColumnName("total_price");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)")
-                        .HasColumnName("unit_price");
-
-                    b.HasKey("OrderItemId");
-
-                    b.ToTable("tbl_order_items");
                 });
 
             modelBuilder.Entity("carkaashiv_angular_API.Models.Part", b =>
@@ -326,6 +350,23 @@ namespace carkaashiv_angular_API.Migrations
                     b.ToTable("tbl_user");
                 });
 
+            modelBuilder.Entity("OrderItem", b =>
+                {
+                    b.HasOne("carkaashiv_angular_API.Models.Order", null)
+                        .WithMany("OrderItems")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("carkaashiv_angular_API.Models.Part", "Part")
+                        .WithMany()
+                        .HasForeignKey("PartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Part");
+                });
+
             modelBuilder.Entity("carkaashiv_angular_API.Models.Cart", b =>
                 {
                     b.HasOne("carkaashiv_angular_API.Models.Part", "Part")
@@ -343,6 +384,11 @@ namespace carkaashiv_angular_API.Migrations
                     b.Navigation("Part");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("carkaashiv_angular_API.Models.Order", b =>
+                {
+                    b.Navigation("OrderItems");
                 });
 #pragma warning restore 612, 618
         }

@@ -135,10 +135,10 @@ namespace carkaashiv_angular_API.Services
                 if (ex.InnerException?.Message.Contains("FK_tbl_cart_tbl_part_part_id") == true)
 
                 {
-                    throw new Exception("Items were removed because they are no longer available");
+                    throw new BusinessException("Items were removed because they are no longer available");
                 }
-                //Step 3: fallback(generic safe message)
-                throw new Exception("something went wrong while placing the order.Please try again.");
+                //Step 3: Unknown → bubble up handle byy middleware
+                throw;
             }
         }
 

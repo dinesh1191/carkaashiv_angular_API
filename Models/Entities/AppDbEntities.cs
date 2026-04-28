@@ -161,13 +161,23 @@ namespace carkaashiv_angular_API.Models
         public decimal TotalAmount { get; set; }
 
         [Column("status")]
-        public string Status { get; set; } = "Pending";
+        public string Status { get; set; } = "Pending";//Pending /Confirmed /Shipped /Delivered
 
         [Column("invoice_number")]
         public string? InvoiceNumber {  get; set; }
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        [Column("payment_method")]
+        public string? PaymentMethod { get; set; } // UPI/Bank Transfer/COD
+        [Column("payment_reference")]
+        public string? PaymentReference { get; set; } //UTR /Ref number
+        [Column("payment_proof_url")]
+        public string? PaymentProofUrl { get; set; } // s3 /local upload path
+        [Column("payment_status")]
+        public string? PaymentStatus { get; set; } = "Pending"; //Pending/Submitted/Verified/Rejected
+        [Column("payment_submitted_at")]
+        public DateTime? PaymentSubmittedAt { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     }
 
