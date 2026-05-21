@@ -38,11 +38,11 @@ namespace carkaashiv_angular_API.Controllers
         [HttpPost("{orderId}/submit-payment")]
         public async Task<IActionResult>SubmitPayment(int orderId, [FromBody] SubmitPaymentRequest request)
         {      
-            await _orderService.SubmitPaymentAsync(CurrentUserId, orderId,request);          
-            return Ok(ApiResponse<object>.Ok("Payment submitted successfully"));          
+           var result = await _orderService.SubmitPaymentAsync(CurrentUserId, orderId, request);
+            return Ok(ApiResponse<SubmitPaymentResult>.Ok("Payment submitted successfully",result));          
         }
 
-
+        // [Authorize(Roles = "admin,employee")] // approval only by admin/employee
         [HttpPost("{orderId}/verify-payment")]
         public async Task<IActionResult>VerifyPayment(int orderId,VerifyPaymentRequest request)
         {
@@ -50,5 +50,27 @@ namespace carkaashiv_angular_API.Controllers
             return Ok(ApiResponse<VerifyPaymentResult>.Ok("Payment verification completed",
             result));
         }
+        //[HttpGet("orders?status={}")]
+        //public async Task getOrder()
+        //{
+        //    return Ok
+        //}
+        //[HttpGet("orders?status={}")]
+        //public async Task<IActionResult> GetCart()
+        //{
+        //    var items = await _cartService.GetCartItemsAsync(CurrentUserId);
+        //    var message = items.Any() ? "Cart fetched Succesfully" : "Cart is empty";
+        //    return Ok(ApiResponse<List<CartItemResponseDto>>.Ok(message, items));
+
+        //}
+        //[HttpGet("orders?status={}")]
+        //public async Task<IActionResult> GetCart()
+        //{
+        //    var items = await _orderService.GetOrderByStatus(CurrentUserId);
+        //    var message = items.Any() ? "Orders fetched Succesfully" : "No orders found";
+        //    return Ok(ApiResponse<List<CartItemResponseDto>>.Ok(message, items));
+
+        //}
+
     }
 }

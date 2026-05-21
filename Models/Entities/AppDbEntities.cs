@@ -1,6 +1,7 @@
 ﻿using carkaashiv_angular_API.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using carkaashiv_angular_API.Models.Enums;
 
 namespace carkaashiv_angular_API.Models
 {
@@ -160,8 +161,8 @@ namespace carkaashiv_angular_API.Models
         [Column("total_amount")]
         public decimal TotalAmount { get; set; }
 
-        [Column("status")]
-        public string Status { get; set; } = "Pending";//Pending /Confirmed /Shipped /Delivered
+        [Column("order_status")]
+        public OrderStatus Status { get; set; } = OrderStatus.Pending;//Pending =1 /Confirmed /Shipped /Delivered
 
         [Column("invoice_number")]
         public string? InvoiceNumber {  get; set; }
@@ -174,8 +175,10 @@ namespace carkaashiv_angular_API.Models
         public string? PaymentReference { get; set; } //UTR /Ref number
         [Column("payment_proof_url")]
         public string? PaymentProofUrl { get; set; } // s3 /local upload path
+       
         [Column("payment_status")]
-        public string? PaymentStatus { get; set; } = "Pending"; //Pending/Submitted/Verified/Rejected
+        public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Pending;
+       
         [Column("payment_submitted_at")]
         public DateTime? PaymentSubmittedAt { get; set; }
 

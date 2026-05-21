@@ -6,7 +6,9 @@ using carkaashiv_angular_API.Exceptions;
 using carkaashiv_angular_API.Interfaces;
 using carkaashiv_angular_API.Middleware;
 using carkaashiv_angular_API.Models;
+using carkaashiv_angular_API.Models.Enums;
 using carkaashiv_angular_API.Models.Shared;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -70,7 +72,7 @@ namespace carkaashiv_angular_API.Services
                     SubtotalAmount = subtotal,
                     TaxAmount = tax,
                     TotalAmount = total,
-                    Status = "Completed",
+                    Status = OrderStatus.Pending,
                     InvoiceNumber = string.Empty
                 };
                 _context.tbl_orders.Add(order);
@@ -160,7 +162,7 @@ namespace carkaashiv_angular_API.Services
                 OrderId = order.OrderId,
                 InvoiceNumber = order.InvoiceNumber ?? string.Empty,
                 CreatedAt = order.CreatedAt,
-                Status = order.Status,
+                Status = order.Status.ToString(),
                 SubtotalAmount = order.SubtotalAmount,
                 TaxAmount = order.TaxAmount,
                 TotalAmount = order.TotalAmount,
@@ -218,14 +220,14 @@ namespace carkaashiv_angular_API.Services
             if (order == null)
                 throw new BusinessException("Order not found");
 
-            if (order.PaymentStatus == PaymentStatusConst.Submitted)
+            if (order.PaymentStatus == PaymentStatus.Submitted)
                 throw new BusinessException("Payment already submitted");
 
             // update order
             order.PaymentMethod = request.PaymentMethod;
             order.PaymentReference = request.PaymentReference;
             order.PaymentProofUrl = request.PaymentProofUrl;
-            order.PaymentStatus = PaymentStatusConst.Submitted;
+            order.PaymentStatus = PaymentStatus.Submitted;
             order.PaymentSubmittedAt = DateTime.UtcNow;
         
 
@@ -260,7 +262,7 @@ namespace carkaashiv_angular_API.Services
             if (order == null)
                 throw new BusinessException("Order not found");
 
-            if (order.PaymentStatus != PaymentStatusConst.Submitted)
+            if (order.PaymentStatus != PaymentStatus.Submitted)
                 throw new BusinessException("Only submitted payments can be verified");
             
             if (request.VerifiedAmount <= 0)
@@ -282,21 +284,21 @@ namespace carkaashiv_angular_API.Services
             // auto decision (still admin-triggered)
             if (diff < 0)
             {
-                order.PaymentStatus = PaymentStatusConst.Rejected;
+                order.PaymentStatus = PaymentStatus.Rejected;
                 verificationLabel = "UNDERPAID";
             }
             else if (diff == 0)
             {
-                order.PaymentStatus = PaymentStatusConst.Verified;
-                order.Status = "Confirmed";
+                order.PaymentStatus = PaymentStatus.Verified;
+                order.Status = OrderStatus.Confirmed;
                 order.PaymentVerifiedAt = DateTime.UtcNow;
                 verificationLabel = "EXACT";
             }
             else
             {
                 // Overpaid case
-                order.PaymentStatus = PaymentStatusConst.Verified;
-                order.Status = "Confirmed";
+                order.PaymentStatus = PaymentStatus.Verified;
+                order.Status = OrderStatus.Confirmed;
                 order.PaymentVerifiedAt = DateTime.UtcNow;
                 verificationLabel = "OVERPAID";
             }
@@ -311,6 +313,12 @@ namespace carkaashiv_angular_API.Services
             };
 
         }
+        //public async Task GetOrdersBystatus()
+        //{
+        //    //logic to written
+
+        //    return Ok;
+        //}
 
     }
 }
