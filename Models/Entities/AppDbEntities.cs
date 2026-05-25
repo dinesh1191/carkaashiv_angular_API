@@ -1,7 +1,8 @@
 ﻿using carkaashiv_angular_API.Models;
+using carkaashiv_angular_API.Models.Enums;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using carkaashiv_angular_API.Models.Enums;
 
 namespace carkaashiv_angular_API.Models
 {
@@ -151,6 +152,8 @@ namespace carkaashiv_angular_API.Models
 
         [Column("u_id")]
         public int UserId { get; set; }
+        [ForeignKey(nameof(UserId))] // navigation property support taking details of user by user_id
+        public required User User { get; set; }
 
         [Column("subtotal_amount")]
         public decimal SubtotalAmount { get; set; }
@@ -192,6 +195,8 @@ namespace carkaashiv_angular_API.Models
         public DateTime? PaymentVerifiedAt { get; set; }
 
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+       
+       
     }
 
 }

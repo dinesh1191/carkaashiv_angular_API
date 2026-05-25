@@ -49,28 +49,15 @@ namespace carkaashiv_angular_API.Controllers
           var result = await _orderService.VerifyPaymentAsync(orderId, request);
             return Ok(ApiResponse<VerifyPaymentResult>.Ok("Payment verification completed",
             result));
+        }  
+
+        // [Authorize(Roles = "admin,employee")] // approval only by admin/employee
+        [HttpGet("payment-review-queue")]
+        public async Task<IActionResult> GetPaymentReviewQueue()
+        {
+            var result = await _orderService.GetPaymentReviewQueueAsync();
+            return Ok(ApiResponse<List<PaymentReviewQueueDto>>.Ok("Orders fetched successfully", (result)));
         }
-        //[HttpGet("orders?status={}")]
-        //public async Task getOrder()
-        //{
-        //    return Ok
-        //}
-        //[HttpGet("orders?status={}")]
-        //public async Task<IActionResult> GetCart()
-        //{
-        //    var items = await _cartService.GetCartItemsAsync(CurrentUserId);
-        //    var message = items.Any() ? "Cart fetched Succesfully" : "Cart is empty";
-        //    return Ok(ApiResponse<List<CartItemResponseDto>>.Ok(message, items));
-
-        //}
-        //[HttpGet("orders?status={}")]
-        //public async Task<IActionResult> GetCart()
-        //{
-        //    var items = await _orderService.GetOrderByStatus(CurrentUserId);
-        //    var message = items.Any() ? "Orders fetched Succesfully" : "No orders found";
-        //    return Ok(ApiResponse<List<CartItemResponseDto>>.Ok(message, items));
-
-        //}
 
     }
 }

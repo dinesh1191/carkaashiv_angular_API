@@ -40,11 +40,11 @@ namespace carkaashiv_angular_API.Services
             {
                 // Step 1: Fetch cart
                 var cartItems = await _context.tbl_cart
-                .Where(c => c.UId == currentUserId)
-                .Include(c => c.Part)
-                .ToListAsync();
+                    .Where(c => c.UId == currentUserId)
+                    .Include(c => c.Part)
+                    .ToListAsync();
 
-               //Step 2.Validate Cart(empty / removed items)
+                //Step 2.Validate Cart(empty / removed items)
                 if (!cartItems.Any())
                     throw new BusinessException("Your cart is empty. Some items may have been removed or are no longer available.");
 
@@ -68,7 +68,8 @@ namespace carkaashiv_angular_API.Services
                 // Step 5:Create Order(Save → get OrderId)          
                 var order = new Order
                 {
-                    UserId = currentUserId,
+                    UserId = currentUserId,                   
+                    User = null!, // Navigation property initialized via UserId; suppress nullable warning
                     SubtotalAmount = subtotal,
                     TaxAmount = tax,
                     TotalAmount = total,
@@ -154,7 +155,7 @@ namespace carkaashiv_angular_API.Services
             if (order == null)
                 throw new KeyNotFoundException("Order not found");
             // Authorization check after retrieval
-            if (order?.UserId != currentUserId)
+            if (order.UserId != currentUserId)
                 throw new UnauthorizedAccessException("Access denied");
 
             return new OrderDetailDto
@@ -168,7 +169,7 @@ namespace carkaashiv_angular_API.Services
                 TotalAmount = order.TotalAmount,
                 Items = order.OrderItems.Select(i => new OrderItemDto
                 {
-                    PartName = i.Part.PName,
+                    PartName = i.Part?.PName ?? string.Empty,
                     Quantity = i.Quantity,
                     UnitPrice = i.UnitPrice,
                     TotalPrice = i.TotalPrice
@@ -312,13 +313,24 @@ namespace carkaashiv_angular_API.Services
                 MismatchAmount = diff
             };
 
+        }     
+        public async Task<List<PaymentReviewQueueDto>> GetPaymentReviewQueueAsync()
+        {
+            return await _context.tbl_orders
+             .AsNoTracking() // Read-only query optimization - disables EF Core change tracking
+            .Include(x => x.User)
+            .Where(x => x.PaymentStatus == PaymentStatus.Submitted)
+            .OrderByDescending(x => x.PaymentSubmittedAt)
+            .Select(x => new PaymentReviewQueueDto
+             {
+                 OrderId = x.OrderId,
+                 CustomerName = x.User.Name?? string.Empty,
+                 TotalAmount = x.TotalAmount,
+                 PaymentProofUrl = x.PaymentProofUrl,
+                 PaymentReference = x.PaymentReference,
+                 SubmittedAt = x.PaymentSubmittedAt
+             }).ToListAsync();           
         }
-        //public async Task GetOrdersBystatus()
-        //{
-        //    //logic to written
-
-        //    return Ok;
-        //}
 
     }
 }

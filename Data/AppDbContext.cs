@@ -12,7 +12,7 @@ namespace carkaashiv_angular_API.Data
             //medille ware configuration 
         }
         
-        public DbSet<Part> tbl_part { get; set; } //Maps to parts table
+            public DbSet<Part> tbl_part { get; set; } //Maps to parts table
             public DbSet<Employee> tbl_emp { get; set; } //Maps to employee table
             public DbSet<User> tbl_user { get; set; }  //Maps to user Table
             public DbSet<Cart> tbl_cart { get; set; }  //Maps to cart table
