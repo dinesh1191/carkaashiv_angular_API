@@ -73,7 +73,7 @@ namespace carkaashiv_angular_API.Services
                     SubtotalAmount = subtotal,
                     TaxAmount = tax,
                     TotalAmount = total,
-                    Status = OrderStatus.Pending,
+                    Status = OrderStatus.PendingPayment,
                     InvoiceNumber = string.Empty
                 };
                 _context.tbl_orders.Add(order);
@@ -230,14 +230,12 @@ namespace carkaashiv_angular_API.Services
             order.PaymentProofUrl = request.PaymentProofUrl;
             order.PaymentStatus = PaymentStatus.Submitted;
             order.PaymentSubmittedAt = DateTime.UtcNow;
-        
-
-
+           
             // insert payment
             var payment = new OrderPayment
             {
                 OrderId = orderId,
-                Amount = request.Amount,
+                Amount = order.TotalAmount,  //System truth for bill amount
                 PaymentMethod = request.PaymentMethod,
                 PaymentReference = request.PaymentReference,
                 PaymentProofUrl = request.PaymentProofUrl
@@ -255,7 +253,7 @@ namespace carkaashiv_angular_API.Services
             };          
                     
         }
-        public async Task<VerifyPaymentResult> VerifyPaymentAsync(int orderId, VerifyPaymentRequest request)
+        public async Task<VerifyPaymentResult> VerifyPaymentAsync(int orderId)
         {
             var order = await _context.tbl_orders
                 .FirstOrDefaultAsync(x => x.OrderId == orderId);
@@ -266,32 +264,26 @@ namespace carkaashiv_angular_API.Services
             if (order.PaymentStatus != PaymentStatus.Submitted)
                 throw new BusinessException("Only submitted payments can be verified");
             
-            if (request.VerifiedAmount <= 0)
-                throw new BusinessException("Invalid verified amount");
-
-
             //System truth
             var totalPaid = await _context.OrderPayments
                      .Where(x => x.OrderId == orderId)
                       .SumAsync(x => x.Amount);
-
+   
             var diff = totalPaid - order.TotalAmount;
-
-            order.VerifiedAmount = request.VerifiedAmount;
+            order.VerifiedAmount = totalPaid;       
             order.PaymentMismatchAmount = diff;
             string verificationLabel;
-
 
             // auto decision (still admin-triggered)
             if (diff < 0)
             {
-                order.PaymentStatus = PaymentStatus.Rejected;
+                order.PaymentStatus = PaymentStatus.FailedVerification;
                 verificationLabel = "UNDERPAID";
             }
             else if (diff == 0)
             {
                 order.PaymentStatus = PaymentStatus.Verified;
-                order.Status = OrderStatus.Confirmed;
+                order.Status = OrderStatus.ReadyForDispatch;
                 order.PaymentVerifiedAt = DateTime.UtcNow;
                 verificationLabel = "EXACT";
             }
@@ -299,7 +291,7 @@ namespace carkaashiv_angular_API.Services
             {
                 // Overpaid case
                 order.PaymentStatus = PaymentStatus.Verified;
-                order.Status = OrderStatus.Confirmed;
+                order.Status = OrderStatus.ReadyForDispatch;
                 order.PaymentVerifiedAt = DateTime.UtcNow;
                 verificationLabel = "OVERPAID";
             }
@@ -309,7 +301,7 @@ namespace carkaashiv_angular_API.Services
             {
                 Label = verificationLabel,
                 ExpectedAmount = order.TotalAmount,
-                PaidAmount = request.VerifiedAmount,
+                PaidAmount = totalPaid,
                 MismatchAmount = diff
             };
 

@@ -10,13 +10,9 @@ namespace carkaashiv_angular_API.Controllers
     [Authorize(Roles = "customer")] // cart is exclusive of customer only
     [ApiController]
     [Route("api/[controller]")]
-    public class OrderController : BaseController
+    public class OrderController(IOrderService orderService) : BaseController
     {
-        private readonly IOrderService _orderService;
-        public OrderController(IOrderService orderService)
-        {
-            _orderService = orderService;
-        }
+        private readonly IOrderService _orderService = orderService;
 
         [HttpPost("place-order")]
         public async Task<IActionResult> PlaceOrder()
@@ -44,9 +40,9 @@ namespace carkaashiv_angular_API.Controllers
 
         // [Authorize(Roles = "admin,employee")] // approval only by admin/employee
         [HttpPost("{orderId}/verify-payment")]
-        public async Task<IActionResult>VerifyPayment(int orderId,VerifyPaymentRequest request)
+        public async Task<IActionResult>VerifyPayment(int orderId)
         {
-          var result = await _orderService.VerifyPaymentAsync(orderId, request);
+          var result = await _orderService.VerifyPaymentAsync(orderId);
             return Ok(ApiResponse<VerifyPaymentResult>.Ok("Payment verification completed",
             result));
         }  
