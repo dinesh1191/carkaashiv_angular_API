@@ -179,7 +179,7 @@ builder.Services.AddSwaggerGen(options =>
 /*** Swagger page load first when starts ***/
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
