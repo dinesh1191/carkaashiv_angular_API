@@ -264,7 +264,8 @@ namespace carkaashiv_angular_API.Migrations
                         .HasColumnName("payment_status");
 
                     b.Property<DateTime?>("PaymentSubmittedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("payment_submitted_at");
 
                     b.Property<DateTime?>("PaymentVerifiedAt")
                         .HasColumnType("timestamp with time zone")
@@ -296,6 +297,8 @@ namespace carkaashiv_angular_API.Migrations
                         .HasColumnName("verified_amount");
 
                     b.HasKey("OrderId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("tbl_orders");
                 });
@@ -435,6 +438,17 @@ namespace carkaashiv_angular_API.Migrations
                         .IsRequired();
 
                     b.Navigation("Part");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("carkaashiv_angular_API.Models.Order", b =>
+                {
+                    b.HasOne("carkaashiv_angular_API.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });

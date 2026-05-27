@@ -12,8 +12,8 @@ using carkaashiv_angular_API.Data;
 namespace carkaashiv_angular_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260521115203_RefactorOrderAndPaymentStatusEnums")]
-    partial class RefactorOrderAndPaymentStatusEnums
+    [Migration("20260527134307_InitialPostgresBaseline")]
+    partial class InitialPostgresBaseline
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -267,7 +267,8 @@ namespace carkaashiv_angular_API.Migrations
                         .HasColumnName("payment_status");
 
                     b.Property<DateTime?>("PaymentSubmittedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("payment_submitted_at");
 
                     b.Property<DateTime?>("PaymentVerifiedAt")
                         .HasColumnType("timestamp with time zone")
@@ -299,6 +300,8 @@ namespace carkaashiv_angular_API.Migrations
                         .HasColumnName("verified_amount");
 
                     b.HasKey("OrderId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("tbl_orders");
                 });
@@ -438,6 +441,17 @@ namespace carkaashiv_angular_API.Migrations
                         .IsRequired();
 
                     b.Navigation("Part");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("carkaashiv_angular_API.Models.Order", b =>
+                {
+                    b.HasOne("carkaashiv_angular_API.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });

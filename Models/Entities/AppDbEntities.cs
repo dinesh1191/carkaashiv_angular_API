@@ -165,7 +165,7 @@ namespace carkaashiv_angular_API.Models
         public decimal TotalAmount { get; set; }
 
         [Column("order_status")]
-        public OrderStatus Status { get; set; } = OrderStatus.Pending;//Pending =1 /Confirmed /Shipped /Delivered
+        public OrderStatus Status { get; set; } = OrderStatus.PendingPayment;//Pending =1 /Confirmed /Shipped /Delivered
 
         [Column("invoice_number")]
         public string? InvoiceNumber {  get; set; }
