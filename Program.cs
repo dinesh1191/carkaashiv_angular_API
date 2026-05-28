@@ -132,7 +132,7 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(
                 "http://localhost:4200", // local Angular app frontend URL
                  "https://carkaashiv.netlify.app",
-                 "https://deploy-preview-9--carkaashiv.netlify.app/") // production frontend domain  url
+                 "https://deploy-preview-9--carkaashiv.netlify.app") // production frontend domain  url
                    .AllowAnyHeader() // for security remove it later
                    .AllowAnyMethod() // get,post,put,update
                    .AllowCredentials(); // important for cookies
