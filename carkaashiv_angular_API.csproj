@@ -8,6 +8,13 @@
 	  <NoWarn>$(NoWarn);1591</NoWarn>	  
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="_archives\**" />
+    <Content Remove="_archives\**" />
+    <EmbeddedResource Remove="_archives\**" />
+    <None Remove="_archives\**" />
+  </ItemGroup>
+
 	<ItemGroup>
 		<PackageReference Include="AWSSDK.Extensions.NETCore.setup" Version="4.0.3.23" />
 		<PackageReference Include="AWSSDK.S3" Version="4.0.18.7" />
@@ -23,10 +30,6 @@
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
 
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="_archives\Migrations_Backup_Old\" />
 	</ItemGroup>
 
 
