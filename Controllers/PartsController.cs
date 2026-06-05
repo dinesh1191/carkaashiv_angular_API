@@ -41,11 +41,9 @@ namespace carkaashiv_angular_API.Controllers
         public async Task<IActionResult> CreatePart(PartCreateDto dto)
         {
             var part = await _partService.CreatePartAsync(dto);
-            return CreatedAtAction(
-                nameof(GetPartById),
+            return CreatedAtAction(nameof(GetPartById),
                 new { id = part.Id },
-                ApiResponse<PartResponseDto>
-                .Ok("Part added successfully", part));
+                ApiResponse<PartResponseDto>.Ok("Part added successfully", part));
         }
 
         // GET: api/parts

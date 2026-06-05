@@ -48,7 +48,7 @@ namespace carkaashiv_angular_API.Services
         public void SetJwtCookie(string token)
         {
             var context = _httpContextAccessor.HttpContext;
-            var isProduction = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "PRODUCTION";
+            var isProduction = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production";
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,

@@ -43,9 +43,7 @@ namespace carkaashiv_angular_API.Services
             if (string.IsNullOrEmpty(part.ImagePath))
             {
                 throw new Exception("ImagePath is null or empty");
-            }
-            Console.WriteLine("ImageKey: " + dto.ImageKey);
-            Console.WriteLine("ImagePath: " + part.ImagePath);
+            }          
             _context.tbl_part.Add(part);
             await _context.SaveChangesAsync();
             return MapToDto(part);
@@ -111,12 +109,12 @@ namespace carkaashiv_angular_API.Services
             return new PartResponseDto
             {
                 Id = p.PartId,
-                Name = p.PName ?? "",
-                Description = p.PDetail ?? "",
-                Price = p.PPrice ?? 0,
-                stock = p.PStock ?? 0,
-                ImageUrl = p.ImagePath ?? "",
-                ImageKey = p.Imagekey ?? ""
+                Name = p.PName,
+                Description = p.PDetail,
+                Price = p.PPrice,
+                Stock = p.PStock,
+                ImageUrl = p.ImagePath,
+                ImageKey = p.Imagekey
             };
         }  
      }

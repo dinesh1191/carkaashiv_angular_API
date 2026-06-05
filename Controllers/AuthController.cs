@@ -45,7 +45,15 @@ namespace carkaashiv_angular_API.Controllers
 
             return Ok(ApiResponse<object>.Ok("User Registered sucessfully"));
         }
-          
+        [HttpGet("cookie-test")]
+        public IActionResult CookieTest()
+        {
+            return Ok(new
+            {
+                Cookies = Request.Cookies.Keys.ToList()
+            });
+        }
+
 
         //======Employee Registration flow=======
 

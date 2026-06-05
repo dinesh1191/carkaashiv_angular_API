@@ -64,9 +64,9 @@ namespace carkaashiv_angular_API.Services
                        CartId = cart.CartId,
                        PartId = cart.PartID,
                        PartName = part.PName,
-                       Price = part.PPrice ?? 0,
+                       Price = part.PPrice ,
                        Quantity = cart.Quantity,
-                       SubTotal = (part.PPrice ?? 0) * cart.Quantity,
+                       SubTotal = part.PPrice * cart.Quantity,
                        ImageUrl = part.ImagePath
                    }).ToListAsync();
         }

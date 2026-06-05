@@ -12,37 +12,40 @@ namespace carkaashiv_angular_API.Models
 
         [Column("part_id")] // Db backend column name, Primary key Auto-Increment
         public int PartId { get; set; } //frontend  form field name, 
-
-       // [MinLength(3, ErrorMessage = "Employee Id Required")]
-        [Required]
+        
         [Column("emp_id")]
-        public int? PEmpId { get; set; }
+        public int PEmpId { get; set; }
 
-        [MinLength(3, ErrorMessage = "Name must 3 characters minimum,maximum 25 characters")]
+        [Required]
+        [StringLength(200, MinimumLength = 3)]
         [Column("part_name")]
         public string PName { get; set; } = string.Empty;
 
 
-        [Required, StringLength(100)]
+        [Required, StringLength(1000)]
         [Column("part_detail")]
-        public string? PDetail { get; set; }
+        public string PDetail { get; set; } = string.Empty;
 
         [Required]
+        [Range(typeof(decimal), "0.01", "999999999")]
         [Column("part_price")]
-        public decimal? PPrice { get; set; }
+        public decimal PPrice { get; set; }
 
 
         [Required]
+        [Range(0, int.MaxValue)]
         [Column("part_stock")]
-        public int? PStock { get; set; }
+        public int PStock { get; set; }
 
-        [Column("part-image_key")]
-        public string? Imagekey { get; set; } 
+        [Required]
+        [StringLength(500)]
+        [Column("part_image_key")]
+        public string Imagekey { get; set; } = string.Empty;
 
         [Required, StringLength(500)]
         [Column("part_image")]
-        public string? ImagePath { get; set; }
-               
+        public string ImagePath { get; set; } = string.Empty;
+
         [Column("created_at")]
         public DateTime  CreatedAt { get; set; }
 
