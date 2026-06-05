@@ -13,10 +13,13 @@ namespace carkaashiv_angular_API.Services
     {
         private readonly IConfiguration _config;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public TokenService(IConfiguration config, IHttpContextAccessor accessor)
+        private readonly ILogger<TokenService> _logger;
+        public TokenService(IConfiguration config, ILogger<TokenService> logger, IHttpContextAccessor accessor)
         {
             _config = config;
             _httpContextAccessor = accessor;
+            _logger =logger;
+
         }
 
 
@@ -55,11 +58,18 @@ namespace carkaashiv_angular_API.Services
                 Secure = true,   // Required for SameSite=None (local + prod)              
                 SameSite = SameSiteMode.None,    // Angular SPA → API (cross-site)XHR
                 Expires = DateTime.UtcNow.AddMinutes(isProduction ? 20 : 30), //prod token expires faster
-                Path = "/"
-            };
-            context?.Response.Cookies.Append("jwtToken", token, cookieOptions);
+                Path = "/",
 
+            };
+            _logger.LogInformation("Setting JWT cookie. Secure={Secure}, SameSite={SameSite}, Expiry={Expiry}",
+             cookieOptions.Secure,
+             cookieOptions.SameSite,
+             cookieOptions.Expires);
+
+            context?.Response.Cookies.Append("jwtToken", token, cookieOptions);
+            _logger.LogInformation("JWT cookie appended successfully.");
         }
+        
         public void ClearJwtCookie(HttpResponse response)
         {
             response.Cookies.Delete("jwtToken", new CookieOptions

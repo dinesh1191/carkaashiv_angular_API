@@ -24,13 +24,13 @@ namespace carkaashiv_angular_API.Controllers
            
         private readonly IAuthService _authService;
         private readonly ITokenService _tokenService;
-
-
+      
         public AuthController( IAuthService authService,ITokenService tokenService)
         {
             
             _authService = authService;
-            _tokenService = tokenService; 
+            _tokenService = tokenService;
+            
         }
   
         //======Customer(User) Registration Flow=======
@@ -86,8 +86,7 @@ namespace carkaashiv_angular_API.Controllers
                 result.Data.Email!
                );
             //Set jwt cookies
-            _tokenService.SetJwtCookie(token);
-
+            _tokenService.SetJwtCookie(token);        
             return Ok(ApiResponse<LoginResponseDto>.Ok(
                 result.Message,
                 result.Data));
