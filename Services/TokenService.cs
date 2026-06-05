@@ -67,6 +67,8 @@ namespace carkaashiv_angular_API.Services
              cookieOptions.Expires);
 
             context?.Response.Cookies.Append("jwtToken", token, cookieOptions);
+            _logger.LogInformation("Response headers dini: {Headers}",
+            string.Join(", ", context!.Response.Headers.Keys));
             _logger.LogInformation("JWT cookie appended successfully.");
         }
         

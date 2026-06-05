@@ -45,12 +45,14 @@ namespace carkaashiv_angular_API.Controllers
 
             return Ok(ApiResponse<object>.Ok("User Registered sucessfully"));
         }
-        [HttpGet("cookie-test")]
-        public IActionResult CookieTest()
+
+        [HttpGet("debug/cookies")]
+        public IActionResult DebugCookies()
         {
             return Ok(new
             {
-                Cookies = Request.Cookies.Keys.ToList()
+                CookieCount = Request.Cookies.Count,
+                Cookies = Request.Cookies.Keys
             });
         }
 
