@@ -130,9 +130,11 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAngularApp",policy =>
     {
         policy.WithOrigins(
-                "http://localhost:4200", // local Angular app frontend URL
-                 "https://carkaashiv.netlify.app",
-                 "https://develop--carkaashiv.netlify.app") // production frontend domain  url
+                 "http://localhost:4200", // local Angular app frontend URL
+                 "https://carkaashiv.netlify.app",// deprecated production frontend domain  url
+                 "https://develop--carkaashiv.netlify.app",// deprecated stagging frontend domain  url
+                 "https://car-kaashiv-angular.onrender.com" // new stagging frontend domain  url
+                ) 
                    .AllowAnyHeader() // for security remove it later
                    .AllowAnyMethod() // get,post,put,update
                    .AllowCredentials(); // important for cookies
