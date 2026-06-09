@@ -1,5 +1,6 @@
 ﻿using Amazon.S3.Model;
 using Azure;
+using Azure.Core;
 using carkaashiv_angular_API.Data;
 using carkaashiv_angular_API.DTOs;
 using carkaashiv_angular_API.Exceptions;
@@ -24,9 +25,13 @@ namespace carkaashiv_angular_API.Services
     public class OrderService : IOrderService
     {
         private readonly AppDbContext _context;
-        public OrderService(AppDbContext context)
+        private readonly S3UploadServices _s3UploadServices;
+       
+
+        public OrderService(AppDbContext context, S3UploadServices s3UploadServices)
         {
             _context = context;
+            _s3UploadServices = s3UploadServices;
         }
         public async Task<OrderResponseDto> PlaceOrderAsync(int currentUserId, string idempotencyKey)
         {            
@@ -141,7 +146,7 @@ namespace carkaashiv_angular_API.Services
                 {
                     throw new BusinessException("Items were removed because they are no longer available");
                 }
-                //Step 3: Unknown → bubble up handle byy middleware
+                //Step 3: Unknown → bubble up handle by middleware
                 throw;
             }
         }
@@ -154,6 +159,7 @@ namespace carkaashiv_angular_API.Services
                     .FirstOrDefaultAsync(o => o.OrderId == orderId);
             if (order == null)
                 throw new KeyNotFoundException("Order not found");
+
             // Authorization check after retrieval
             if (order.UserId != currentUserId)
                 throw new UnauthorizedAccessException("Access denied");
@@ -212,22 +218,28 @@ namespace carkaashiv_angular_API.Services
 
         public async Task<SubmitPaymentResult> SubmitPaymentAsync(int userId, int orderId, SubmitPaymentRequest request)
         {
+            // validations
             if (string.IsNullOrWhiteSpace(request.PaymentMethod))
                 throw new BusinessException("Payment method required");
-           
-            var order = await _context.tbl_orders
-                .FirstOrDefaultAsync(o => o.OrderId == orderId && o.UserId == userId);
 
-            if (order == null)
-                throw new BusinessException("Order not found");
+            if (string.IsNullOrWhiteSpace(request.TempKey))
+                throw new BusinessException("Payment screenshot required");
+
+            var order = await _context.tbl_orders.FirstOrDefaultAsync(o => o.OrderId == orderId && o.UserId == userId);
+            
+            if (order == null) 
+                throw new BusinessException("Order not found");           
 
             if (order.PaymentStatus == PaymentStatus.Submitted)
-                throw new BusinessException("Payment already submitted");
+               throw new BusinessException("Payment already submitted");
+
+            var (proofUrl, proofKey) = await _s3UploadServices.FinalizeImageAsync(request.TempKey, $"payments/order-{orderId}", null);
 
             // update order
             order.PaymentMethod = request.PaymentMethod;
             order.PaymentReference = request.PaymentReference;
-            order.PaymentProofUrl = request.PaymentProofUrl;
+            order.PaymentProofUrl = proofUrl;
+            order.PaymentProofKey = proofKey;            
             order.PaymentStatus = PaymentStatus.Submitted;
             order.PaymentSubmittedAt = DateTime.UtcNow;
            
@@ -237,12 +249,11 @@ namespace carkaashiv_angular_API.Services
                 OrderId = orderId,
                 Amount = order.TotalAmount,  //System truth for bill amount
                 PaymentMethod = request.PaymentMethod,
-                PaymentReference = request.PaymentReference,
-                PaymentProofUrl = request.PaymentProofUrl
+                PaymentReference = request.PaymentReference
+                
             };
-            _context.OrderPayments.Add(payment);
-            // single save (atomic)
-            await _context.SaveChangesAsync();
+            _context.OrderPayments.Add(payment);           
+            await _context.SaveChangesAsync(); // single save (atomic)
 
             // mark order as submitted (not verified yet)
             return new SubmitPaymentResult
@@ -250,7 +261,7 @@ namespace carkaashiv_angular_API.Services
                 PaymentId = payment.PaymentId,
                 Amount = payment.Amount,
                 SubmittedAt = payment.SubmittedAt
-            };          
+            };       
                     
         }
         public async Task<VerifyPaymentResult> VerifyPaymentAsync(int orderId)
@@ -318,8 +329,8 @@ namespace carkaashiv_angular_API.Services
                  OrderId = x.OrderId,
                  CustomerName = x.User.Name?? string.Empty,
                  TotalAmount = x.TotalAmount,
-                 PaymentProofUrl = x.PaymentProofUrl,
-                 PaymentReference = x.PaymentReference,
+                PaymentProofUrl = x.PaymentProofUrl,
+                PaymentReference = x.PaymentReference,
                  SubmittedAt = x.PaymentSubmittedAt
              }).ToListAsync();           
         }

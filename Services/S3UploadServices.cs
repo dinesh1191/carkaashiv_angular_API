@@ -1,9 +1,12 @@
 ﻿namespace carkaashiv_angular_API.Services
+   
 {
     using Amazon.S3;
     using Amazon.S3.Model;
     using Azure;
     using carkaashiv_angular_API.DTOs;
+    using carkaashiv_angular_API.Interfaces;
+    using Microsoft.AspNetCore.Http.HttpResults;
     using System.Net;
     using System.Text.Json;
 
@@ -59,6 +62,7 @@
             }
 
             //Security check: Only allow deletion known folders
+
             //If key is NOT temp AND NOT parts → block it
             if (!key.StartsWith("temp/") && !key.StartsWith("parts/")) // Allow deletion only from controlled folders (temp/ and parts/)
             {
@@ -82,7 +86,7 @@
             }          
         }        
 
-        public async Task<(string finalUrl, string finalKey)> FinalizeImageAsync(string? tempKey, string? existingImageUrl)
+        public async Task<(string finalUrl, string finalKey)> FinalizeImageAsync(string? tempKey, string destinationFolder, string? existingImageUrl)
         {
             var bucket = _config["S3:BucketName"];
 
@@ -109,7 +113,7 @@
                     );
             }
             //Step 1:Build final key (move from temp -> parts)
-            var finalKey = tempKey.Replace("temp/", "parts/");
+            var finalKey = tempKey.Replace("temp/", $"{destinationFolder}/");
             var finalUrl = $"https://{bucket}.s3.ap-south-1.amazonaws.com/{finalKey}";
 
             //Step 2: Copy image form temp/ -> parts/

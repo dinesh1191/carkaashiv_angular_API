@@ -2,9 +2,8 @@
 {
     public class SubmitPaymentRequest
     {
-        public decimal Amount { get; set; }
-        public string PaymentMethod { get; set; } = null!;
-        public string PaymentReference { get; set; } = null!;
-        public string? PaymentProofUrl { get; set; }
+        public string PaymentMethod { get; set; } = string.Empty;
+        public string PaymentReference { get; set; } = string.Empty;
+        public string TempKey { get; set; } = string.Empty;
     }
 }

@@ -29,7 +29,7 @@ namespace carkaashiv_angular_API.Services
             if (string.IsNullOrEmpty(userIdClaim))
                 throw new UnauthorizedAccessException("Invalid token");
             //get url and key form service
-            var result = await _s3UploadServices.FinalizeImageAsync(dto.ImageKey, null);
+            var result = await _s3UploadServices.FinalizeImageAsync(dto.ImageKey,"parts", null);
             var part = new Part
             {
                 PEmpId = int.Parse(userIdClaim),
@@ -61,7 +61,7 @@ namespace carkaashiv_angular_API.Services
                 throw new UnauthorizedAccessException("Invalid token");
 
             //get url and key form service
-            var result = await _s3UploadServices.FinalizeImageAsync(dto.ImageKey, part.ImagePath);
+            var result = await _s3UploadServices.FinalizeImageAsync(dto.ImageKey,"parts", part.ImagePath);
 
             part.PEmpId = int.Parse(userIdClaim);
             part.PName = dto.Name;

@@ -51,8 +51,6 @@ namespace carkaashiv_angular_API.Models
 
         [Column("updated_at")]
         public DateTime? UpdatedAt { get; set; }
-
-
     }
 
     public class User
@@ -81,10 +79,8 @@ namespace carkaashiv_angular_API.Models
 
         [Column("u_role")] 
         public string? Role { get; set; }
-
-
-
     }
+
     public class Employee
     {
         [Key]
@@ -143,9 +139,6 @@ namespace carkaashiv_angular_API.Models
 
       }
 
-
-
-
     public class Order
     {
         [Key]
@@ -179,9 +172,13 @@ namespace carkaashiv_angular_API.Models
         public string? PaymentMethod { get; set; } // UPI/Bank Transfer/COD
         [Column("payment_reference")]
         public string? PaymentReference { get; set; } //UTR /Ref number
+
         [Column("payment_proof_url")]
         public string? PaymentProofUrl { get; set; } // s3 /local upload path
-       
+
+        [Column("payment_proof_key")]                  
+        public string? PaymentProofKey { get; set; }
+
         [Column("payment_status")]
         public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Pending;
        
@@ -199,10 +196,8 @@ namespace carkaashiv_angular_API.Models
 
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
        
-       
-    }
 
-}
+    }
 
     public class OrderItem
     {
@@ -225,10 +220,34 @@ namespace carkaashiv_angular_API.Models
 
         [Column("total_price")]
         public decimal TotalPrice { get; set; }
-        public Part Part { get; set; } = null!; 
+        public Part Part { get; set; } = null!;
 
+    }
+
+    
+    public class OrderPayment
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("payment_id")]
+        public int PaymentId { get; set; }
+
+        [Column("order_id")]
+        public int OrderId { get; set; }
+
+        [Column("amount")]
+        public decimal Amount { get; set; }
+
+        [Column("payment_method")]
+        public string PaymentMethod { get; set; } = default!;
+
+        [Column("payment_reference")]
+        public string PaymentReference { get; set; } = default!;
+
+        [Column("submitted_at")]
+        public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
+    }  
 }
-
 public class OrderIdempotency
 {
     [Key]
@@ -246,29 +265,4 @@ public class OrderIdempotency
 
     [Column("CreatedAt")]
     public DateTime CreatedAt { get; set; }
-}
-public class OrderPayment
-{
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    [Column("payment_id")]
-    public int PaymentId { get; set; }
-
-    [Column("order_id")]
-    public int OrderId { get; set; }
-
-    [Column("amount")]
-    public decimal Amount { get; set; }
-
-    [Column("payment_method")]
-    public string PaymentMethod { get; set; } = default!;
-
-    [Column("payment_reference")]
-    public string PaymentReference { get; set; } = default!;
-
-    [Column("payment_proof_url")]
-    public string? PaymentProofUrl { get; set; }
-
-    [Column("submitted_at")]
-    public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
 }
