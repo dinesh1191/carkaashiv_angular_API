@@ -70,6 +70,14 @@ namespace carkaashiv_angular_API.Services
             _logger.LogInformation("Response headers dini: {Headers}",
             string.Join(", ", context!.Response.Headers.Keys));
             _logger.LogInformation("JWT cookie appended successfully.");
+            context.Response.OnStarting(() =>
+            {
+                _logger.LogInformation(
+                    "Set-Cookie Header dini: {Cookie}",
+                    context.Response.Headers["Set-Cookie"].ToString());
+
+                return Task.CompletedTask;
+            });
         }
         
         public void ClearJwtCookie(HttpResponse response)
