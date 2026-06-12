@@ -23,9 +23,7 @@ namespace carkaashiv_angular_API.Controllers
             {          
             var message =  await _cartService.AddToCartAsync(CurrentUserId, request);
             return Ok(ApiResponse<string>.Ok(message));
-        }
-
-      
+        }      
         
         [HttpGet]
         public async Task<IActionResult> GetCart()
@@ -35,7 +33,6 @@ namespace carkaashiv_angular_API.Controllers
             return Ok(ApiResponse<List<CartItemResponseDto>>.Ok( message, items) );             
 
         }
-
        
         [HttpPut("update-quantity")]
         public async Task<IActionResult>updateQuanity(UpdateCartQuantityRequestDto request)
@@ -43,8 +40,6 @@ namespace carkaashiv_angular_API.Controllers
             var message = await _cartService.UpdateCartQuantityAsync(CurrentUserId, request);
             return Ok(ApiResponse<string>.Ok(message));
         }
-
-
        
         [HttpDelete("remove/{partId}")]
         public async Task<IActionResult> RemoveItem(int partId)

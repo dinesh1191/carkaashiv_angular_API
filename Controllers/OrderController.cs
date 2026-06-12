@@ -5,11 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace carkaashiv_angular_API.Controllers
-{
-
-    [Authorize(Roles = "customer")] // cart is exclusive of customer only
+{ 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/[controller]")]    
     public class OrderController(IOrderService orderService) : BaseController
     {
         private readonly IOrderService _orderService = orderService;
@@ -24,6 +22,7 @@ namespace carkaashiv_angular_API.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "customer")] // order is exclusive of customer only
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOrderById(int id)
         {
@@ -31,6 +30,7 @@ namespace carkaashiv_angular_API.Controllers
             return Ok(order);
         }
 
+        [Authorize(Roles = "customer")] 
         [HttpPost("{orderId}/submit-payment")]
         public async Task<IActionResult>SubmitPayment(int orderId, [FromBody] SubmitPaymentRequest request)
         {      
@@ -38,7 +38,7 @@ namespace carkaashiv_angular_API.Controllers
             return Ok(ApiResponse<SubmitPaymentResult>.Ok("Payment submitted successfully",result));          
         }
 
-        // [Authorize(Roles = "admin,employee")] // approval only by admin/employee
+        [Authorize(Roles = "admin,employee")] 
         [HttpPost("{orderId}/verify-payment")]
         public async Task<IActionResult>VerifyPayment(int orderId)
         {
@@ -47,13 +47,12 @@ namespace carkaashiv_angular_API.Controllers
             result));
         }  
 
-        // [Authorize(Roles = "admin,employee")] // approval only by admin/employee
+        [Authorize(Roles = "admin,employee")] 
         [HttpGet("payment-review-queue")]
         public async Task<IActionResult> GetPaymentReviewQueue()
         {
             var result = await _orderService.GetPaymentReviewQueueAsync();
             return Ok(ApiResponse<List<PaymentReviewQueueDto>>.Ok("Orders fetched successfully", (result)));
         }
-
     }
 }

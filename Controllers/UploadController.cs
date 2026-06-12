@@ -18,15 +18,6 @@ namespace carkaashiv_angular_API.Controllers
             _s3Client = s3Client ;
         }
 
-        [HttpGet("test-s3")]
-        public async Task<IActionResult> TestS3() {
-           
-            var buckets = await _s3Client.ListBucketsAsync();
-          
-            return Ok(buckets.Buckets.Select(b => b.BucketName));
-        
-        }
-
         [HttpPost("presigned-url")]
         public IActionResult GeneratetUploadUrl([FromBody] UploadRequest request)
         {      

@@ -219,10 +219,7 @@ namespace carkaashiv_angular_API.Services
         public async Task<SubmitPaymentResult> SubmitPaymentAsync(int userId, int orderId, SubmitPaymentRequest request)
         {
             // validations
-            if (string.IsNullOrWhiteSpace(request.PaymentMethod))
-                throw new BusinessException("Payment method required");
-
-            if (string.IsNullOrWhiteSpace(request.TempKey))
+              if (string.IsNullOrWhiteSpace(request.TempKey))
                 throw new BusinessException("Payment screenshot required");
 
             var order = await _context.tbl_orders.FirstOrDefaultAsync(o => o.OrderId == orderId && o.UserId == userId);
@@ -274,7 +271,8 @@ namespace carkaashiv_angular_API.Services
 
             if (order.PaymentStatus != PaymentStatus.Submitted)
                 throw new BusinessException("Only submitted payments can be verified");
-            
+
+          
             //System truth
             var totalPaid = await _context.OrderPayments
                      .Where(x => x.OrderId == orderId)
@@ -329,11 +327,13 @@ namespace carkaashiv_angular_API.Services
                  OrderId = x.OrderId,
                  CustomerName = x.User.Name?? string.Empty,
                  TotalAmount = x.TotalAmount,
-                PaymentProofUrl = x.PaymentProofUrl,
-                PaymentReference = x.PaymentReference,
+                 PaymentProofUrl = x.PaymentProofUrl,
+                 PaymentReference = x.PaymentReference,
                  SubmittedAt = x.PaymentSubmittedAt
              }).ToListAsync();           
-        }
+        }    
 
     }
+
+    
 }

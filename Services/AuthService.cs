@@ -18,9 +18,7 @@ namespace carkaashiv_angular_API.Services
 
         public AuthService(AppDbContext context)
         {
-
             _context = context;
-
         }
         public async Task<bool> RegisterUserAsync(RegisterUserDto dto)
         {
@@ -41,15 +39,13 @@ namespace carkaashiv_angular_API.Services
             return true;
         }
 
-
-
         public async Task<bool> RegisterEmployeeAsync(RegisterEmployeeDto dto)
         {
             if (await _context.tbl_emp.AnyAsync(x => x.Email == dto.Email))
                 return false;
+           
             var emp = new Employee
             {
-
                 Name = dto.Name,
                 Phone = dto.Phone,
                 Email = dto.Email,
@@ -64,10 +60,8 @@ namespace carkaashiv_angular_API.Services
         public async Task<AuthResult> LoginAsync(LoginRequest request)
         {
 
-            if (string.IsNullOrWhiteSpace(request.Username) ||
-                    (string.IsNullOrWhiteSpace(request.Password)))
+            if (string.IsNullOrWhiteSpace(request.Username) || (string.IsNullOrWhiteSpace(request.Password)))
             {
-
                 return new AuthResult
                 {
                     Success = false,

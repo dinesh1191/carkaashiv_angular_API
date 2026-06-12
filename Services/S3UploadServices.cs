@@ -61,12 +61,14 @@
                 key = ExtractKeyFromUrl(key);
             }
 
-            //Security check: Only allow deletion known folders
+            // Security check: Only allow deletion known folders
 
-            //If key is NOT temp AND NOT parts → block it
-            if (!key.StartsWith("temp/") && !key.StartsWith("parts/")) // Allow deletion only from controlled folders (temp/ and parts/)
+            // If key is NOT below listed folder → block it(accidental delete protection)
+            var folder = key.Split('/')[0];
+
+            if (!AllowedFolders.Contains(folder))
             {
-              throw new InvalidOperationException("Invalid S3 key. Deletion not allowed.");
+                throw new InvalidOperationException("Invalid S3 key. Deletion not allowed.");
             }
             try
             {
@@ -124,12 +126,14 @@
                 DestinationBucket = bucket,
                 DestinationKey = finalKey
             });
+
             //Step 3: Delete temp image (cleanup)
             await _s3Client.DeleteObjectAsync(new DeleteObjectRequest
             {
                 BucketName = bucket,
                 Key = tempKey
             });
+
             //Step 4: Delete OLD image from parts/ (only if different from new one)
             if (!string.IsNullOrEmpty(existingImageUrl))
             {
@@ -156,5 +160,13 @@
             var uri = new Uri(url);
             return uri.AbsolutePath.TrimStart('/'); //**** https ://bucket.s3.ap-south-1.amazonaws.com/parts/abc.png -> parts / abc.png *******/
         }
+        private static readonly HashSet<string> AllowedFolders =
+         [
+            "temp",
+            "parts",
+            "payments",
+            "orders"
+         ];
     }
+
 }

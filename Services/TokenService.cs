@@ -21,9 +21,7 @@ namespace carkaashiv_angular_API.Services
             _logger =logger;
 
         }
-
-
-        public string GenerateJwtToken(int userId, string role, string nameOrEmail)
+       public string GenerateJwtToken(int userId, string role, string nameOrEmail)
         {
             var jwtSettings = _config.GetSection("Jwt");
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
@@ -46,8 +44,6 @@ namespace carkaashiv_angular_API.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
-
         public void SetJwtCookie(string token)
         {
             var context = _httpContextAccessor.HttpContext;
@@ -61,22 +57,11 @@ namespace carkaashiv_angular_API.Services
                 Path = "/",
 
             };
-            _logger.LogInformation("Setting JWT cookie. Secure={Secure}, SameSite={SameSite}, Expiry={Expiry}",
-             cookieOptions.Secure,
-             cookieOptions.SameSite,
-             cookieOptions.Expires);
-
             context?.Response.Cookies.Append("jwtToken", token, cookieOptions);
-            _logger.LogInformation("Response headers dini: {Headers}",
-            string.Join(", ", context!.Response.Headers.Keys));
             _logger.LogInformation("JWT cookie appended successfully.");
             context.Response.OnStarting(() =>
             {
-                _logger.LogInformation(
-                    "Set-Cookie Header dini: {Cookie}",
-                    context.Response.Headers["Set-Cookie"].ToString());
-
-                return Task.CompletedTask;
+             return Task.CompletedTask;
             });
         }
         

@@ -46,17 +46,6 @@ namespace carkaashiv_angular_API.Controllers
             return Ok(ApiResponse<object>.Ok("User Registered sucessfully"));
         }
 
-        [HttpGet("debug/cookies")]
-        public IActionResult DebugCookies()
-        {
-            return Ok(new
-            {
-                CookieCount = Request.Cookies.Count,
-                Cookies = Request.Cookies.Keys
-            });
-        }
-
-
         //======Employee Registration flow=======
 
         [HttpPost("register-employee")]
@@ -70,6 +59,7 @@ namespace carkaashiv_angular_API.Controllers
             return Ok(ApiResponse<object>.Ok("Employee registered successfully"));
 
         }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
