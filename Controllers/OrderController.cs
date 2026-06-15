@@ -1,4 +1,5 @@
-﻿using carkaashiv_angular_API.DTOs;
+﻿using Azure.Core;
+using carkaashiv_angular_API.DTOs;
 using carkaashiv_angular_API.Exceptions;
 using carkaashiv_angular_API.Interfaces;
 using carkaashiv_angular_API.Models;
@@ -16,12 +17,12 @@ namespace carkaashiv_angular_API.Controllers
         private readonly IOrderService _orderService = orderService;
 
         [HttpPost("place-order")]
-        public async Task<IActionResult> PlaceOrder()
+        public async Task<IActionResult> PlaceOrder([FromBody] PlaceOrderRequest request)
         {
             var key = Request.Headers["Idempotency-Key"].FirstOrDefault();
             if (string.IsNullOrWhiteSpace(key))
                 return BadRequest(new { message = "Idempotency-key header is required" });
-            var result = await _orderService.PlaceOrderAsync(CurrentUserId, key);
+            var result = await _orderService.PlaceOrderAsync(CurrentUserId,request,key);
             return Ok(result);
         }
 

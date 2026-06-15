@@ -1,4 +1,5 @@
-﻿using Amazon.S3.Model;
+﻿using Amazon.Runtime.Internal;
+using Amazon.S3.Model;
 using Azure;
 using Azure.Core;
 using carkaashiv_angular_API.Data;
@@ -33,7 +34,7 @@ namespace carkaashiv_angular_API.Services
             _context = context;
             _s3UploadServices = s3UploadServices;
         }
-        public async Task<OrderResponseDto> PlaceOrderAsync(int currentUserId, string idempotencyKey)
+        public async Task<OrderResponseDto> PlaceOrderAsync(int currentUserId,PlaceOrderRequest request, string idempotencyKey)
         {
             // Order Flow:
             // Fetch → Validate → Idempotency → Calculate → Create Order →
@@ -49,10 +50,24 @@ namespace carkaashiv_angular_API.Services
                     .Include(c => c.Part)
                     .ToListAsync();
 
-                //Step 2.Validate Cart(empty / removed items)
+                //Step 2.Validate Cart(empty / removed items and delivery address)
                 if (!cartItems.Any())
                     throw new BusinessException("Your cart is empty. Some items may have been removed or are no longer available.");
 
+                if (string.IsNullOrWhiteSpace(request.DeliveryName))
+                {
+                    throw new BusinessException("Delivery name is required");
+                }
+
+                if (string.IsNullOrWhiteSpace(request.DeliveryPhone))
+                {
+                    throw new BusinessException("Delivery phone is required");
+                }
+
+                if (string.IsNullOrWhiteSpace(request.DeliveryAddress))
+                {
+                    throw new BusinessException("Delivery address is required");
+                }
                 // Step:3 Check Idempotency(prevent duplicate order)
                 var existingOrderId = await _context.OrderIdempotencies
                     .Where(x => x.UserId == currentUserId && x.IdempotencyKey == idempotencyKey)
@@ -78,6 +93,10 @@ namespace carkaashiv_angular_API.Services
                     SubtotalAmount = subtotal,
                     TaxAmount = tax,
                     TotalAmount = total,
+                    DeliveryName = request.DeliveryName,
+                    DeliveryPhone = request.DeliveryPhone,
+                    DeliveryAddress = request.DeliveryAddress,
+                    Landmark = request.Landmark,
                     Status = OrderStatus.PendingPayment,
                     InvoiceNumber = string.Empty
                 };

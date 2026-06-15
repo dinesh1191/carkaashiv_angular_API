@@ -6,7 +6,7 @@ namespace carkaashiv_angular_API.Interfaces
 {
     public interface IOrderService
     {
-        Task<OrderResponseDto> PlaceOrderAsync(int currentUserId, string idempotencyKey);
+        Task<OrderResponseDto> PlaceOrderAsync(int currentUserId,PlaceOrderRequest request, string idempotencyKey);
         Task<OrderDetailDto> GetOrderByIdAsync(int currentUserId, int orderId);
         Task <SubmitPaymentResult>SubmitPaymentAsync(int currentUserId, int orderId, SubmitPaymentRequest request);
         Task<List<AdminOrderDto>> GetOrdersByStatusAsync(OrderStatus status);

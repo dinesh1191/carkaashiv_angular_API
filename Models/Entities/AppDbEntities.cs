@@ -195,7 +195,13 @@ namespace carkaashiv_angular_API.Models
         public DateTime? PaymentVerifiedAt { get; set; }
 
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
-       
+        public string DeliveryName { get; set; } = string.Empty;
+
+        public string DeliveryPhone { get; set; } = string.Empty;
+
+        public string DeliveryAddress { get; set; } = string.Empty;
+
+        public string? Landmark { get; set; }
 
     }
 
