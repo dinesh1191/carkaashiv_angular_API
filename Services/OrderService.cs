@@ -26,7 +26,7 @@ namespace carkaashiv_angular_API.Services
     {
         private readonly AppDbContext _context;
         private readonly S3UploadServices _s3UploadServices;
-       
+
 
         public OrderService(AppDbContext context, S3UploadServices s3UploadServices)
         {
@@ -34,7 +34,7 @@ namespace carkaashiv_angular_API.Services
             _s3UploadServices = s3UploadServices;
         }
         public async Task<OrderResponseDto> PlaceOrderAsync(int currentUserId, string idempotencyKey)
-        {            
+        {
             // Order Flow:
             // Fetch → Validate → Idempotency → Calculate → Create Order →
             // Deduct Stock → Save Items → Clear Cart → Commit → Return
@@ -73,7 +73,7 @@ namespace carkaashiv_angular_API.Services
                 // Step 5:Create Order(Save → get OrderId)          
                 var order = new Order
                 {
-                    UserId = currentUserId,                   
+                    UserId = currentUserId,
                     User = null!, // Navigation property initialized via UserId; suppress nullable warning
                     SubtotalAmount = subtotal,
                     TaxAmount = tax,
@@ -85,8 +85,8 @@ namespace carkaashiv_angular_API.Services
                 // Save order first (need ID)
                 await _context.SaveChangesAsync();
                 // Step 5.1: Generate invoice with orderId
-                order.InvoiceNumber = GenerateInvoiceNumber(order.OrderId); 
-                
+                order.InvoiceNumber = GenerateInvoiceNumber(order.OrderId);
+
                 // Step 6: Validate & Deduct Stock(NO save inside loop)               
                 foreach (var item in cartItems)
                 {
@@ -99,7 +99,7 @@ namespace carkaashiv_angular_API.Services
                     // Deduct stock
                     part.PStock -= item.Quantity;
                 }
-                 // Step 7: Save order items
+                // Step 7: Save order items
                 var orderItems = cartItems.Select(item => new OrderItem
                 {
                     OrderId = order.OrderId,//Use generated OrderId from saved order header
@@ -129,7 +129,7 @@ namespace carkaashiv_angular_API.Services
             catch (DbUpdateException ex)
             {
                 await transaction.RollbackAsync();// Rollback everything if any step fails
-                
+
                 // Step 1: Idempotency recovery (keep this)
                 var existingKey = await _context.OrderIdempotencies
                     .FirstOrDefaultAsync(x =>
@@ -152,7 +152,7 @@ namespace carkaashiv_angular_API.Services
         }
 
         public async Task<OrderDetailDto> GetOrderByIdAsync(int currentUserId, int orderId)
-        {  
+        {
             var order = await _context.tbl_orders
                         .Include(o => o.OrderItems)
                         .ThenInclude(i => i.Part)
@@ -219,16 +219,16 @@ namespace carkaashiv_angular_API.Services
         public async Task<SubmitPaymentResult> SubmitPaymentAsync(int userId, int orderId, SubmitPaymentRequest request)
         {
             // validations
-              if (string.IsNullOrWhiteSpace(request.TempKey))
+            if (string.IsNullOrWhiteSpace(request.TempKey))
                 throw new BusinessException("Payment screenshot required");
 
             var order = await _context.tbl_orders.FirstOrDefaultAsync(o => o.OrderId == orderId && o.UserId == userId);
-            
-            if (order == null) 
-                throw new BusinessException("Order not found");           
+
+            if (order == null)
+                throw new BusinessException("Order not found");
 
             if (order.PaymentStatus == PaymentStatus.Submitted)
-               throw new BusinessException("Payment already submitted");
+                throw new BusinessException("Payment already submitted");
 
             var (proofUrl, proofKey) = await _s3UploadServices.FinalizeImageAsync(request.TempKey, $"payments/order-{orderId}", null);
 
@@ -236,10 +236,10 @@ namespace carkaashiv_angular_API.Services
             order.PaymentMethod = request.PaymentMethod;
             order.PaymentReference = request.PaymentReference;
             order.PaymentProofUrl = proofUrl;
-            order.PaymentProofKey = proofKey;            
+            order.PaymentProofKey = proofKey;
             order.PaymentStatus = PaymentStatus.Submitted;
             order.PaymentSubmittedAt = DateTime.UtcNow;
-           
+
             // insert payment
             var payment = new OrderPayment
             {
@@ -247,9 +247,9 @@ namespace carkaashiv_angular_API.Services
                 Amount = order.TotalAmount,  //System truth for bill amount
                 PaymentMethod = request.PaymentMethod,
                 PaymentReference = request.PaymentReference
-                
+
             };
-            _context.OrderPayments.Add(payment);           
+            _context.OrderPayments.Add(payment);
             await _context.SaveChangesAsync(); // single save (atomic)
 
             // mark order as submitted (not verified yet)
@@ -258,8 +258,8 @@ namespace carkaashiv_angular_API.Services
                 PaymentId = payment.PaymentId,
                 Amount = payment.Amount,
                 SubmittedAt = payment.SubmittedAt
-            };       
-                    
+            };
+
         }
         public async Task<VerifyPaymentResult> VerifyPaymentAsync(int orderId)
         {
@@ -272,14 +272,14 @@ namespace carkaashiv_angular_API.Services
             if (order.PaymentStatus != PaymentStatus.Submitted)
                 throw new BusinessException("Only submitted payments can be verified");
 
-          
+
             //System truth
             var totalPaid = await _context.OrderPayments
                      .Where(x => x.OrderId == orderId)
                       .SumAsync(x => x.Amount);
-   
+
             var diff = totalPaid - order.TotalAmount;
-            order.VerifiedAmount = totalPaid;       
+            order.VerifiedAmount = totalPaid;
             order.PaymentMismatchAmount = diff;
             string verificationLabel;
 
@@ -314,26 +314,56 @@ namespace carkaashiv_angular_API.Services
                 MismatchAmount = diff
             };
 
-        }     
-        public async Task<List<PaymentReviewQueueDto>> GetPaymentReviewQueueAsync()
+        }
+        public async Task<List<AdminOrderDto>> GetOrdersByStatusAsync(OrderStatus status)
+        {
+
+            return await _context.tbl_orders
+            .AsNoTracking() // Read-only query optimization - disables EF Core change tracking
+            .Include(x => x.User)
+            .Where(x => x.Status == status)
+            .OrderByDescending(x => x.PaymentSubmittedAt)
+            .Select(x => new AdminOrderDto
+            {
+                OrderId = x.OrderId,
+                CustomerName = x.User.Name ?? string.Empty,
+                TotalAmount = x.TotalAmount,
+                PaymentProofUrl = x.PaymentProofUrl,
+                PaymentReference = x.PaymentReference,
+                SubmittedAt = x.PaymentSubmittedAt
+            }).ToListAsync();
+        }
+
+        public async Task MarkAsShippedAsync(int orderId) {
+
+            var order = await _context.tbl_orders.FirstOrDefaultAsync(x => x.OrderId == orderId);
+
+            if (order == null)
+                throw new BusinessException("Order not found");
+
+            if (order.Status != OrderStatus.ReadyForDispatch)
+                throw new BusinessException("Only dispatch-ready order can be marked as shipped");
+
+            order.Status = OrderStatus.Shipped;
+            await _context.SaveChangesAsync();
+        }
+    
+
+
+    public async Task<List<MyOrderDto>> GetMyOrdersAsync(int currentUserId)
         {
             return await _context.tbl_orders
-             .AsNoTracking() // Read-only query optimization - disables EF Core change tracking
-            .Include(x => x.User)
-            .Where(x => x.PaymentStatus == PaymentStatus.Submitted)
-            .OrderByDescending(x => x.PaymentSubmittedAt)
-            .Select(x => new PaymentReviewQueueDto
-             {
-                 OrderId = x.OrderId,
-                 CustomerName = x.User.Name?? string.Empty,
-                 TotalAmount = x.TotalAmount,
-                 PaymentProofUrl = x.PaymentProofUrl,
-                 PaymentReference = x.PaymentReference,
-                 SubmittedAt = x.PaymentSubmittedAt
-             }).ToListAsync();           
-        }    
+                    .AsNoTracking()
+                    .Where(x => x.UserId == currentUserId)
+                    .OrderByDescending(x => x.CreatedAt)
+                    .Select(x => new MyOrderDto
+                    {
+                        OrderId = x.OrderId,
+                        TotalAmount = x.TotalAmount,
+                        CreatedAt = x.CreatedAt,
+                        Status = (int)x.Status
+                    }).ToListAsync();
 
+        }
     }
-
-    
 }

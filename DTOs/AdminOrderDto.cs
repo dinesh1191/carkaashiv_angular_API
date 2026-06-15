@@ -1,6 +1,6 @@
 ﻿namespace carkaashiv_angular_API.DTOs
 {
-    public class PaymentReviewQueueDto
+    public class AdminOrderDto
     {
         public int OrderId { get; set; }
 

@@ -4,8 +4,6 @@
     {
         PendingPayment = 1,
         ReadyForDispatch = 2,
-        Shipped = 3,
-        Delivered = 4,
-        Cancelled = 5
+        Shipped = 3       
     }
 }

@@ -9,10 +9,9 @@ namespace carkaashiv_angular_API.Interfaces
         Task<OrderResponseDto> PlaceOrderAsync(int currentUserId, string idempotencyKey);
         Task<OrderDetailDto> GetOrderByIdAsync(int currentUserId, int orderId);
         Task <SubmitPaymentResult>SubmitPaymentAsync(int currentUserId, int orderId, SubmitPaymentRequest request);
+        Task<List<AdminOrderDto>> GetOrdersByStatusAsync(OrderStatus status);
         Task<VerifyPaymentResult> VerifyPaymentAsync(int orderId);
-        //Task<List<OrderSummaryDto>> GetOrdersByStatusAsync(OrderStatus status);
-        Task<List<PaymentReviewQueueDto>> GetPaymentReviewQueueAsync();
-
-
+        Task MarkAsShippedAsync(int orderId);
+        Task<List<MyOrderDto>> GetMyOrdersAsync(int currentUserId);
     }
 }
