@@ -20,6 +20,7 @@ using System.Diagnostics;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using static Azure.Core.HttpHeader;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace carkaashiv_angular_API.Services
 {
@@ -337,10 +338,17 @@ namespace carkaashiv_angular_API.Services
         public async Task<List<AdminOrderDto>> GetOrdersByStatusAsync(OrderStatus status)
         {
 
-            return await _context.tbl_orders
+            var query = _context.tbl_orders
             .AsNoTracking() // Read-only query optimization - disables EF Core change tracking
             .Include(x => x.User)
-            .Where(x => x.Status == status)
+            .Where(x => x.Status == status);
+
+            if (status == OrderStatus.PendingPayment)
+            {
+                query = query.Where(x =>
+                    x.PaymentStatus == PaymentStatus.Submitted);
+            }
+            return await query
             .OrderByDescending(x => x.PaymentSubmittedAt)
             .Select(x => new AdminOrderDto
             {

@@ -8,10 +8,13 @@
 
         public decimal TotalAmount { get; set; }
 
+        public string?  PaymentStatus { get; set; }
+
         public string? PaymentProofUrl { get; set; }
 
         public string? PaymentReference { get; set; }
 
         public DateTime? SubmittedAt { get; set; }
+     
     }
 }
