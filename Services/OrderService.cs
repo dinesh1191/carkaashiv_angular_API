@@ -225,7 +225,11 @@ namespace carkaashiv_angular_API.Services
             {
                 OrderId = order.OrderId,
                 InvoiceNumber = order.InvoiceNumber ?? "",
-                TotalAmount = order.TotalAmount
+                TotalAmount = order.TotalAmount,
+                deliveryName = order.DeliveryName,
+                deliveryPhone = order.DeliveryPhone,
+                deliveryAddress = order.DeliveryAddress,
+                landmark = order.Landmark??"",
             };
         }
         public static class DbExceptionHelper
