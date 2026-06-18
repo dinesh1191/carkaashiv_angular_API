@@ -1,116 +1,231 @@
-# CarKaashiv 2.0 – API
+# CarKaashiv 2.0 – Backend API
 
-Backend REST API for CarKaashiv 2.0, built with ASP.NET Core and designed using a decoupled architecture to support Angular frontend clients.
-
----
+Backend REST API for CarKaashiv 2.0, built with ASP.NET Core and designed using a decoupled architecture to support Angular frontend clients. The platform enables spare parts catalog management, customer ordering, payment proof submission, and order fulfillment workflows.
 
 ## Tech Stack
 
-- ASP.NET Core Web API
-- Entity Framework Core
-- JWT Authentication using HttpOnly Cookies
-- MSSQL (Local Development)
-- PostgreSQL (Neon – Production)
-- CORS enabled for Angular frontend
+* ASP.NET Core Web API
+* Entity Framework Core
+* PostgreSQL
+* JWT Authentication
+* Repository Pattern
+* Docker
+* Swagger / OpenAPI
+* GitHub Actions CI/CD
+* Render Deployment
+* Neon PostgreSQL (Production)
 
 ---
 
 ## Architecture Overview
 
-The API follows a layered architecture with clear separation of concerns using Controllers, Services, Repositories, and DTOs to ensure maintainability and scalability.
+The API follows a layered architecture with clear separation of concerns:
+
+```text
+Controllers
+    ↓
+Services
+    ↓
+Repositories
+    ↓
+Entity Framework Core
+    ↓
+PostgreSQL
+```
+
+Key goals:
+
+* Maintainability
+* Testability
+* Scalability
+* Clear separation of business logic and data access
 
 ---
 
-## Authentication
+## Authentication & Security
 
-- JWT token generated on successful login
-- Token stored securely in **HttpOnly cookies**
-- `auth/me` endpoint validates authenticated users
-- Cookie-based JWT authentication supports Angular `withCredentials`
+### JWT Authentication
+
+* Secure login using JWT access tokens
+* Authenticated user validation through `/auth/me`
+* Route protection using JWT authentication middleware
+* Session-aware authentication flow
+* Unauthorized requests return standardized responses
+
+### Security Features
+
+* Centralized authentication handling
+* Protected administrative endpoints
+* Environment-based configuration
+* Secrets managed outside source control
+* Standardized API error responses
+
+---
+
+## Core Business Modules
+
+### User Management
+
+* User registration
+* Login
+* Authenticated user validation
+* Session management
+
+### Parts Management
+
+* Create spare parts
+* Update spare parts
+* Delete spare parts
+* Manage inventory availability
+* Image upload support
+* Fallback image handling
+
+### Customer Ordering
+
+* Shopping cart workflow
+* Delivery information capture
+* Order placement
+* Invoice generation
+* Payment proof submission
+* Idempotent order creation support
+
+### Order Fulfillment Workflow
+
+```text
+Submitted
+      ↓
+Verified
+      ↓
+ReadyForDispatch
+      ↓
+Shipped
+```
+
+Administrative actions include:
+
+* Payment verification
+* Dispatch processing
+* Shipment tracking updates
+* Order status management
+
+---
+
+## API Features
+
+### Standardized Responses
+
+Consistent API response contracts for:
+
+* Success responses
+* Validation failures
+* Business rule violations
+* Server errors
+
+### Validation
+
+Server-side validation for:
+
+* Customer information
+* Delivery details
+* Order placement requests
+* Authentication requests
+
+### Global Exception Handling
+
+Centralized exception handling through custom middleware:
+
+* Consistent error payloads
+* Reduced controller boilerplate
+* Improved diagnostics and maintainability
 
 ---
 
 ## Project Structure
 
-```
-├── Controllers
-├── Services
-├── DTOs
-├── Entities
-├── Data
-├── db
-│   └── migrations
-│       ├── mssql
-│       └── postgresql
-├── appsettings.json
-├── appsettings.Development.json
-└── Program.cs
+```text
+Controllers
+Services
+Repositories
+DTOs
+Entities
+Data
+Middleware
+Configurations
+Program.cs
+appsettings.json
+appsettings.Development.json
 ```
 
 ---
 
 ## Database Strategy
 
-- **Local Development:** MSSQL
-- **Production:** Neon PostgreSQL (Serverless)
+### Development & Production
 
-Database schema is managed using **Entity Framework Core**, with database-specific migration scripts versioned separately for MSSQL and PostgreSQL.
+PostgreSQL is used as the primary database strategy.
 
-- No manual schema changes in production
-- All changes are tracked via migration scripts
+Features:
 
-Example migration folders:
-- `db/migrations/mssql`
-- `db/migrations/postgresql`
+* Entity Framework Core migrations
+* Version-controlled schema changes
+* Environment-specific configuration
+* Production-ready cloud database deployment using Neon
 
----
+Guidelines:
 
-## Environment Configuration
-
-### Development (Local MSSQL)
-
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=DESKTOP-XXXX;Database=car_kaashiv_web_app;Trusted_Connection=True;TrustServerCertificate=True"
-  }
-}
-```
-
-### Production (Neon PostgreSQL)
-
-Configured using Render environment secrets
-
-**No credentials committed to source control**
+* No manual schema modifications
+* Schema changes managed through EF Core migrations
+* Migration history tracked in source control
 
 ---
 
-## API Endpoints (Sample)
+## Example Endpoints
 
-| Method | Endpoint           | Description                    |
-|--------|-------------------|--------------------------------|
-| POST   | /api/auth/register | Register new user              |
-| POST   | /api/auth/login    | Login user                     |
-| GET    | /api/auth/me       | Get logged-in user             |
-| GET    | /health/db         | Database health check          |
+### Authentication
+
+POST   /api/auth/register
+POST   /api/auth/login
+GET    /api/auth/me
+
+### Parts
+
+GET    /api/parts
+GET    /api/parts/{id}
+POST   /api/parts
+PUT    /api/parts/{id}
+DELETE /api/parts/{id}
+
+### Orders
+
+POST   /api/orders/place-order
+POST   /api/orders/upload-payment-proof
+GET    /api/orders/submitted
+GET    /api/orders/ready-for-dispatch
+GET    /api/orders/shipped
+
+### Health
+
+GET    /health/db
 
 ---
 
 ## Error Handling
 
-The API uses consistent HTTP status codes and a unified response format.
+Standard HTTP status code usage:
 
-- **400** → Validation and bad request errors
-- **401** → Unauthorized access
-- **409** → Conflict (eg: mobile number already registered)
-- **500** → Internal server errors (unexpected failures)
+* 400 → Validation errors
+* 401 → Unauthorized
+* 403 → Forbidden
+* 404 → Resource not found
+* 409 → Business conflicts
+* 500 → Unexpected server errors
 
-### Error Response Format
+Example:
 
 ```json
 {
   "success": false,
-  "message": "Mobile number already registered.",
+  "message": "Payment proof already submitted.",
   "data": null
 }
 ```
@@ -119,9 +234,21 @@ The API uses consistent HTTP status codes and a unified response format.
 
 ## Deployment & CI/CD
 
-- Backend is containerized using Docker
-- Deployed on Render
-- Automated build and deployment using GitHub Actions
+### Containerization
+
+* Dockerized backend services
+* Consistent deployment environments
+
+### CI/CD
+
+* GitHub Actions pipeline
+* Automated build validation
+* Automated deployment workflow
+
+### Hosting
+
+* Render (API Hosting)
+* Neon PostgreSQL (Database)
 
 ---
 
@@ -130,11 +257,12 @@ The API uses consistent HTTP status codes and a unified response format.
 ```bash
 git clone <repository-url>
 cd CarKaashiv.Api
+
 dotnet restore
 dotnet run
 ```
 
-### Trust HTTPS locally
+Trust HTTPS locally:
 
 ```bash
 dotnet dev-certs https --trust
@@ -144,24 +272,31 @@ dotnet dev-certs https --trust
 
 ## Key Learnings Implemented
 
-- Proper HTTP status code usage (409 Conflict)
-- DB-driven timestamps (CURRENT_TIMESTAMP, SYSDATETIME)
-- Secure JWT cookie handling with Angular
-- Environment-based configuration management
-- Strict database migration discipline (local → production)
+* Repository Pattern implementation
+* JWT authentication and authorization
+* Global exception middleware
+* PostgreSQL production deployment
+* Docker containerization
+* CI/CD automation using GitHub Actions
+* Idempotent API design
+* Standardized API contracts
+* Order lifecycle management
+* Production-oriented database migration discipline
 
 ---
 
 ## Notes
 
-- Frontend is handled separately using Angular
-- Snackbar is used for frontend notifications
-- Database schema is versioned via migration scripts only
-- Sensitive configuration values (DB credentials, JWT secrets) are managed using environment variables and are not committed to source control
+* Frontend is implemented separately using Angular 19 (Standalone Architecture)
+* API designed to support web and future mobile clients
+* Business workflow driven by order lifecycle states
+* Environment secrets are never committed to source control
+* Database schema changes are managed exclusively through EF Core migrations
 
 ---
 
 ## Author
 
-**Dinesh Varadhan**  
+Dinesh Varadhan
+
 Full Stack Developer (.NET + Angular)
