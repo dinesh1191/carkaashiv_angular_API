@@ -19,7 +19,7 @@ namespace carkaashiv_angular_API.Migrations
 
             migrationBuilder.AddColumn<string>(
                 name: "DeliveryName",
-                table: "tbl_order",
+                table: "tbl_orders",
                 type: "text",
                 nullable: false,
                 defaultValue: "");

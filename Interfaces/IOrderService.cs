@@ -13,5 +13,6 @@ namespace carkaashiv_angular_API.Interfaces
         Task<VerifyPaymentResult> VerifyPaymentAsync(int orderId);
         Task MarkAsShippedAsync(int orderId);
         Task<List<MyOrderDto>> GetMyOrdersAsync(int currentUserId);
+        Task<AdminOrderDetailsDto?> GetOrderDetailsAsync(int orderId);
     }
 }

@@ -98,7 +98,7 @@ namespace carkaashiv_angular_API.Services
                     DeliveryPhone = request.DeliveryPhone,
                     DeliveryAddress = request.DeliveryAddress,
                     Landmark = request.Landmark,
-                    Status = OrderStatus.PendingPayment,
+                    OrderStatus = OrderStatus.Pending,
                     InvoiceNumber = string.Empty
                 };
                 _context.tbl_orders.Add(order);
@@ -189,7 +189,7 @@ namespace carkaashiv_angular_API.Services
                 OrderId = order.OrderId,
                 InvoiceNumber = order.InvoiceNumber ?? string.Empty,
                 CreatedAt = order.CreatedAt,
-                Status = order.Status.ToString(),
+                Status = order.OrderStatus.ToString(),
                 SubtotalAmount = order.SubtotalAmount,
                 TaxAmount = order.TaxAmount,
                 TotalAmount = order.TotalAmount,
@@ -316,7 +316,7 @@ namespace carkaashiv_angular_API.Services
             else if (diff == 0)
             {
                 order.PaymentStatus = PaymentStatus.Verified;
-                order.Status = OrderStatus.ReadyForDispatch;
+                order.OrderStatus = OrderStatus.ReadyForDispatch;
                 order.PaymentVerifiedAt = DateTime.UtcNow;
                 verificationLabel = "EXACT";
             }
@@ -324,7 +324,7 @@ namespace carkaashiv_angular_API.Services
             {
                 // Overpaid case
                 order.PaymentStatus = PaymentStatus.Verified;
-                order.Status = OrderStatus.ReadyForDispatch;
+                order.OrderStatus = OrderStatus.ReadyForDispatch;
                 order.PaymentVerifiedAt = DateTime.UtcNow;
                 verificationLabel = "OVERPAID";
             }
@@ -345,9 +345,9 @@ namespace carkaashiv_angular_API.Services
             var query = _context.tbl_orders
             .AsNoTracking() // Read-only query optimization - disables EF Core change tracking
             .Include(x => x.User)
-            .Where(x => x.Status == status);
+            .Where(x => x.OrderStatus == status);
 
-            if (status == OrderStatus.PendingPayment)
+            if (status == OrderStatus.Pending)
             {
                 query = query.Where(x =>
                     x.PaymentStatus == PaymentStatus.Submitted);
@@ -372,15 +372,15 @@ namespace carkaashiv_angular_API.Services
             if (order == null)
                 throw new BusinessException("Order not found");
 
-            if (order.Status != OrderStatus.ReadyForDispatch)
+            if (order.OrderStatus != OrderStatus.ReadyForDispatch)
                 throw new BusinessException("Only dispatch-ready order can be marked as shipped");
 
-            order.Status = OrderStatus.Shipped;
+            order.OrderStatus = OrderStatus.Shipped;
             await _context.SaveChangesAsync();
         }
     
 
-
+        //Customer order history
     public async Task<List<MyOrderDto>> GetMyOrdersAsync(int currentUserId)
         {
             return await _context.tbl_orders
@@ -392,9 +392,41 @@ namespace carkaashiv_angular_API.Services
                         OrderId = x.OrderId,
                         TotalAmount = x.TotalAmount,
                         CreatedAt = x.CreatedAt,
-                        Status = (int)x.Status
+                        // Can edit if order is still pending OR payment is not finalized
+                        CanEditAddress =  x.OrderStatus == OrderStatus.Pending ||
+                                          x.PaymentStatus == PaymentStatus.Pending ||
+                                          x.PaymentStatus == PaymentStatus.Submitted,
+                        OrderStatus = x.OrderStatus,
+                        OrderStatusText = x.OrderStatus.ToString()
                     }).ToListAsync();
 
         }
+        public async Task<AdminOrderDetailsDto?> GetOrderDetailsAsync(int OrderId)
+        {
+            return await _context.tbl_orders
+                .Where(o => o.OrderId == OrderId)
+                .Select(o => new AdminOrderDetailsDto
+                {
+                    OrderId = o.OrderId,
+                    RecipientName = o.DeliveryName,
+                    RecipientPhone = o.DeliveryPhone,
+                    RecipientAddress = o.DeliveryAddress,
+                    LandMark = o.Landmark?? "",
+                    TotalAmount = o.TotalAmount,
+                    SubmittedAt = o.PaymentSubmittedAt,
+
+                    Items = o.OrderItems
+                    .Select(i => new AdminOrderItemDto
+                    {
+                        PartId = i.PartId,
+                        PartName = i.Part.PName,
+                        Quantity = i.Quantity,
+                        UnitPrice = i.UnitPrice,
+                        LineTotal = i.Quantity * i.UnitPrice
+                    }).ToList()
+
+                }).FirstOrDefaultAsync();
+        }
     }
+    
 }

@@ -15,8 +15,7 @@
             }
             // Convenience static methods
             public static ApiResponse<T> Ok(string message, 
-                T? data = default)
-                => new(true, message, data);
+                T? data = default)=> new(true, message, data);
             public static ApiResponse<T> Fail(string message)
             => new(false, message);
 

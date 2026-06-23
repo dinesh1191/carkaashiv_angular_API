@@ -79,5 +79,19 @@ namespace carkaashiv_angular_API.Controllers
 
             return Ok(ApiResponse<List<MyOrderDto>>.Ok("Orders fetched successfully",orders));        
         }
+
+   
+        [Authorize(Roles = "admin,employee")]
+        [HttpGet("ordersDetails/{orderId}")]
+        public async Task<IActionResult>GetOrderDetails(int orderId)
+        {
+            var result = await _orderService.GetOrderDetailsAsync(orderId);
+            if(result == null)
+            {
+              return NotFound(ApiResponse<object>.Fail("Order not found"));      
+            }
+            return Ok(ApiResponse<object>.Ok("Order retrieved successfully", result));
+        }
+
     }
 }
