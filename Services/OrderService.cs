@@ -391,6 +391,11 @@ namespace carkaashiv_angular_API.Services
                     {
                         OrderId = x.OrderId,
                         TotalAmount = x.TotalAmount,
+                        RecipientName = x.DeliveryName,
+                        RecipientAddress = x.DeliveryAddress,
+                        RecipientPhone = x.DeliveryPhone,
+                        LandMark = x.Landmark,
+                        PaymentProofUrl = x.PaymentProofUrl,
                         CreatedAt = x.CreatedAt,
                         // Can edit if order is still pending OR payment is not finalized
                         CanEditAddress =  x.OrderStatus == OrderStatus.Pending ||

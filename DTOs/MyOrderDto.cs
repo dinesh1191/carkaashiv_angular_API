@@ -10,9 +10,10 @@ namespace carkaashiv_angular_API.DTOs
         public string? OrderStatusText {  get; set; }
         public DateTime CreatedAt { get; set; }
         public string? PaymentProofUrl { get; set; }
-        public string? DeliveryName { get; set; }
-        public string? Phone { get; set; }
-        public string? Address { get; set; }
+        public string? RecipientName { get; set; }
+        public string? RecipientPhone { get; set; }
+        public string? RecipientAddress { get; set; }
+        public string? LandMark { get; set; }
         public bool  CanEditAddress { get; set; }
     }
 }
