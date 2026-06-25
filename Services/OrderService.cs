@@ -358,6 +358,7 @@ namespace carkaashiv_angular_API.Services
             {
                 OrderId = x.OrderId,
                 CustomerName = x.User.Name ?? string.Empty,
+                CustomerPhone = x.User.Phone?? string.Empty,
                 TotalAmount = x.TotalAmount,
                 PaymentProofUrl = x.PaymentProofUrl,
                 PaymentReference = x.PaymentReference,
@@ -417,8 +418,9 @@ namespace carkaashiv_angular_API.Services
                     RecipientPhone = o.DeliveryPhone,
                     RecipientAddress = o.DeliveryAddress,
                     LandMark = o.Landmark?? "",
-                    TotalAmount = o.TotalAmount,
-                    SubmittedAt = o.PaymentSubmittedAt,
+                    GstTaxAmount = o.TaxAmount,
+                    TotalAmount  = o.TotalAmount,
+                    SubmittedAt  = o.PaymentSubmittedAt,
 
                     Items = o.OrderItems
                     .Select(i => new AdminOrderItemDto

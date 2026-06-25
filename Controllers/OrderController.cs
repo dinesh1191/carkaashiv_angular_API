@@ -81,7 +81,7 @@ namespace carkaashiv_angular_API.Controllers
         }
 
    
-        [Authorize(Roles = "admin,employee")]
+        [Authorize(Roles = "admin,employee,customer")]
         [HttpGet("ordersDetails/{orderId}")]
         public async Task<IActionResult>GetOrderDetails(int orderId)
         {
