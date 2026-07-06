@@ -21,8 +21,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddHealthChecks(); // Add health checks api came live and db
-builder.Services.AddControllers();
-
+builder.Services.AddControllers(
+    options =>
+    {
+        options.ReturnHttpNotAcceptable = true;
+    });
 //Business Services to be registered here
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
@@ -131,10 +134,9 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
                  "http://localhost:4200", // local Angular app frontend URL
-                 "https://carkaashiv.netlify.app",// deprecated production frontend domain  url
-                 "https://develop--carkaashiv.netlify.app",// deprecated stagging frontend domain  url
-                 "https://car-kaashiv-angular.onrender.com" // new stagging frontend domain  url
-                ) 
+                 "https://carkaashiv.netlify.app",// production frontend domain  url
+                 "https://develop--carkaashiv.netlify.app"// stagging frontend domain  url
+                 ) 
                    .AllowAnyHeader() // for security remove it later
                    .AllowAnyMethod() // get,post,put,update
                    .AllowCredentials(); // important for cookies
