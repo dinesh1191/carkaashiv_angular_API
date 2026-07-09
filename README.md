@@ -1,45 +1,81 @@
 # CarKaashiv 2.0 – Backend API
 
-Backend REST API for CarKaashiv 2.0, built with ASP.NET Core and designed using a decoupled architecture to support Angular frontend clients. The platform enables spare parts catalog management, customer ordering, payment proof submission, and order fulfillment workflows.
+Production-oriented ASP.NET Core Web API powering CarKaashiv 2.0, a scalable product ordering and order management platform. The API provides secure authentication, inventory management, customer ordering, payment verification, and order fulfillment workflows while following a layered architecture and modern backend development practices.
+
+##  Project Highlights
+
+* Layered Architecture (Controller → IService → Service → EF Core)
+* JWT Authentication & Authorization
+* Dockerized API
+* Entity Framework Core with PostgreSQL
+* CI/CD using GitHub Actions
+* Production deployment on Render + Neon PostgreSQL
+* Global Exception Middleware
+* Idempotent Order Creation
+* Standardized API Responses
+* EF Core Migration Strategy
+
+## System Overview
+```text
+Angular 19 Frontend
+          │
+          ▼
+ASP.NET Core Web API
+          │
+Entity Framework Core
+          │
+PostgreSQL
+```
+---
+
+## Production Stack
+
+* API hosted on Render
+* PostgreSQL hosted on Neon
+* GitHub Actions for automated deployment
+* Docker containerized backend
+
+## Production Practices
+* Environment-based configuration
+* Secrets excluded from source control
+* EF Core migration discipline
+* Structured API responses
+* Centralized exception handling
+* Dockerized deployments
+* CI/CD automation
+* Health monitoring endpoint
 
 ## Tech Stack
 
 * ASP.NET Core Web API
+* C#
+* Dependency Injection
 * Entity Framework Core
 * PostgreSQL
 * JWT Authentication
-* Repository Pattern
+* Swagger/OpenAPI
 * Docker
-* Swagger / OpenAPI
-* GitHub Actions CI/CD
-* Render Deployment
-* Neon PostgreSQL (Production)
+* GitHub Actions
+* Health Checks
+* Global Exception Middleware
 
 ---
 
 ## Architecture Overview
 
-The API follows a layered architecture with clear separation of concerns:
+The API follows a layered architecture inspired by Clean Architecture principles:
 
 ```text
 Controllers
     ↓
-Services
+Service Interface (IService)
     ↓
-Repositories
+Service Implementation (Service)
     ↓
-Entity Framework Core
+ApplicationDbContext (EF Core)
     ↓
 PostgreSQL
 ```
-
-Key goals:
-
-* Maintainability
-* Testability
-* Scalability
-* Clear separation of business logic and data access
-
 ---
 
 ## Authentication & Security
@@ -71,7 +107,7 @@ Key goals:
 * Authenticated user validation
 * Session management
 
-### Parts Management
+### Product Management
 
 * Create spare parts
 * Update spare parts
@@ -80,7 +116,7 @@ Key goals:
 * Image upload support
 * Fallback image handling
 
-### Customer Ordering
+### Customer Ordering Workflow
 
 * Shopping cart workflow
 * Delivery information capture
@@ -111,6 +147,8 @@ Administrative actions include:
 ---
 
 ## API Features
+
+Interactive API documentation using Swagger/OpenAPI
 
 ### Standardized Responses
 
@@ -144,8 +182,8 @@ Centralized exception handling through custom middleware:
 
 ```text
 Controllers
+Interfaces
 Services
-Repositories
 DTOs
 Entities
 Data
@@ -182,31 +220,31 @@ Guidelines:
 ## Example Endpoints
 
 ### Authentication
-
+```text
 POST   /api/auth/register
 POST   /api/auth/login
 GET    /api/auth/me
-
+```
 ### Parts
-
+```text
 GET    /api/parts
 GET    /api/parts/{id}
 POST   /api/parts
 PUT    /api/parts/{id}
 DELETE /api/parts/{id}
-
+```
 ### Orders
-
+```text
 POST   /api/orders/place-order
 POST   /api/orders/upload-payment-proof
 GET    /api/orders/submitted
 GET    /api/orders/ready-for-dispatch
 GET    /api/orders/shipped
-
+```
 ### Health
-
+```text
 GET    /health/db
-
+```
 ---
 
 ## Error Handling
@@ -272,7 +310,6 @@ dotnet dev-certs https --trust
 
 ## Key Learnings Implemented
 
-* Repository Pattern implementation
 * JWT authentication and authorization
 * Global exception middleware
 * PostgreSQL production deployment
@@ -284,6 +321,13 @@ dotnet dev-certs https --trust
 * Production-oriented database migration discipline
 
 ---
+## Engineering Challenges Solved
+* Designed a consistent service layer to keep controllers lightweight and business logic centralized.
+* Prevented duplicate order creation using idempotency support.
+* Centralized exception handling to eliminate repetitive controller logic.
+* Standardized API responses for consistent frontend integration.
+* Managed database schema evolution through EF Core migrations.
+* Designed order lifecycle workflows supporting customer and administrative operations.
 
 ## Notes
 
